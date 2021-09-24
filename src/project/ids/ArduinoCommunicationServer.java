@@ -8,7 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Vector;;
 
-class ArduinoCommunicationServer {
+public class ArduinoCommunicationServer {
     //private static List<Device> deviceList = new ArrayList<>();
     private static Vector<Device> deviceList = new Vector<>();
     
@@ -150,6 +150,10 @@ class ArduinoCommunicationServer {
 	            }
         	}
         }
+    }
+    
+    public static Vector<Device> getDeviceList() {
+    	return deviceList;
     }
     
     
