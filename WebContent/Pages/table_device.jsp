@@ -15,6 +15,16 @@
 	<link rel="stylesheet" type="text/css" href="CSS/web-css.css"/>
 	<script type="text/javascript" src="JQuery/jquery-3.5.1.min.js"></script>
 	<script type="text/javascript">
+		var deviceID
+		
+		function revise(id) {
+			window.open('revise.jsp', '수정', 'width=800px, height=400px')
+			deviceID = id
+		}
+		
+		function getDeviceID() {
+			return deviceID
+		}
 	</script>
 </head>
 
@@ -29,8 +39,7 @@
 			<td width="200">디바이스 제거</td>
 		</tr>
 		<%	
-		ArrayList<DeviceTableDTO> registeredDeviceList = new ArrayList<>();
-		registeredDeviceList = dbConnection.selectRegisteredDevice();
+		ArrayList<DeviceTableDTO> registeredDeviceList = dbConnection.selectRegisteredDevice();
 			
 		// DeviceList(tcList)의 사이즈가 0이며
 		// 하나의 디바이스만 등록되었다가 DeviceList에서 삭제된 경우
@@ -47,7 +56,7 @@
 					<td id="position<%=deviceID%>" width="200"><%=position%></td>
 					<%if (state.equals("열림")) {%>
 						<td width="200" style="color: red"><%=state%><br>
-							<form action="Signal.jsp" target="_blank" method="post">
+							<form action="request_signal.jsp" target="_blank" method="post">
 								<input type="text" value=<%=deviceID%> name="deviceID" style="display: none;" readonly>
 								<input type="submit" value="경고신호" disabled>
 							</form>
@@ -57,14 +66,14 @@
 					<%} %>
 					<td width="200"><%=time%></td>
 					<td width="200">
-						<form action="DeviceLog.jsp" target="_blank" method="post">
+						<form action="device_log.jsp" target="_blank" method="post">
 							<input type="text" value="<%=deviceID%>" name="deviceID" style="display: none;" readonly>
-							<button type="button" id=<%=deviceID%> onclick="revise(this.deviceID)">수정</button>
+							<button type="button" id=<%=deviceID%> onclick="revise(this.id)">수정</button>
 							<input type="submit" value="로그확인"> 
 						</form>
 					</td>
 					<td width="200">
-						<form action="Disconnect.jsp" target="_blank" method="post">
+						<form action="disconnect.jsp" target="_blank" method="post">
 							<input type="text" value="<%=deviceID%>" name="deviceID" style="display: none;" readonly>
 							<input type="submit" value="제거" disabled>
 						</form>
@@ -85,7 +94,8 @@
 				boolean isConnected = false;
 				
 				for(int j=0; j<aliveDeviceList.size(); j++) {
-					if(aliveDeviceList.get(j).getDeviceID() == deviceID)
+					// Todo 새로운 ID에 맞게 수정 필요
+					if(aliveDeviceList.get(j).id == deviceID)
 						isConnected = true; // 연결되어있는 디바이스
 				}%>
 		
@@ -95,7 +105,7 @@
 						<td id="position<%=deviceID%>"width="200"><%=position%></td>
 						<% if (state.equals("열림")) {%>
 							<td width="200" style="color: red"><%=state%><br>
-								<form action="Signal.jsp" target="_blank" method="post">
+								<form action="request_signal.jsp" target="_blank" method="post">
 									<input type="text" value=<%=deviceID%> name="deviceID" style="display: none;" readonly>
 									<input type="submit" value="경고신호">	
 								</form>
@@ -105,14 +115,14 @@
 						<%} %>
 						<td width="200"><%=time%></td>
 						<td width="200">
-							<form action="DeviceLog.jsp" target="_blank" method="post">
+							<form action="device_log.jsp" target="_blank" method="post">
 								<input type="text" value="<%=deviceID%>" name="deviceID" style="display: none;" readonly>
-								<button type="button" id=<%=deviceID%> onclick="revise(this.deviceID)">수정</button>
+								<button type="button" id=<%=deviceID%> onclick="revise(this.id)">수정</button>
 								<input type="submit" value="로그확인">
 							</form>
 						</td>	
 						<td width="200">
-							<form action="Disconnect.jsp" target="_blank" method="post">
+							<form action="disconnect.jsp" target="_blank" method="post">
 								<input type="text" value="<%=deviceID%> name="deviceID" style="display: none;" readonly>
 								<input type="submit" value="제거" >
 							</form>
@@ -126,7 +136,7 @@
 						<td id="position<%=deviceID%>"width="200"><%=position%></td>
 						<% if (state.equals("열림")) {%>
 							<td width="200" style="color: red"><%=state%><br>
-								<form action="Signal.jsp" target="_blank" method="post">
+								<form action="request_signal.jsp" target="_blank" method="post">
 									<input type="text" value=<%=deviceID%> name="deviceID" style="display: none;" readonly>
 									<input type="submit" value="경고신호" disabled>	
 								</form>
@@ -136,14 +146,14 @@
 						<%} %>
 						<td width="200"><%=time%></td>
 						<td width="200">
-							<form action="DeviceLog.jsp" target="_blank" method="post">
+							<form action="device_log.jsp" target="_blank" method="post">
 								<input type="text" value="<%=deviceID%>" name="deviceID" style="display: none;" readonly>
-								<button type="button" id=<%=deviceID%> onclick="revise(this.deviceID)">수정</button>
+								<button type="button" id=<%=deviceID%> onclick="revise(this.id)">수정</button>
 								<input type="submit" value="로그확인">
 							</form>
 						</td>
 						<td width="200">
-							<form action="Disconnect.jsp" target="_blank" method="post">
+							<form action="disconnect.jsp" target="_blank" method="post">
 								<input type="text" value="<%=deviceID%>" name="deviceID" style="display: none;" readonly>
 								<input type="submit" value="제거" disabled>
 							</form>

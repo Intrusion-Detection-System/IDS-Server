@@ -94,7 +94,7 @@ public class DeviceHandler implements Runnable {
     		case 11:
     			System.out.println("ERROR"); break;
     		default :
-    			System.out.println("����ó��");
+    			System.out.println("예외처리");
     		}
     	}
     	else
@@ -109,9 +109,9 @@ public class DeviceHandler implements Runnable {
     	switch (device.sensorID)
     	{
     	case 1:
-    		recvDoorData(buff, read, pos); // sensorID(1) : ���� Ž��
+    		recvDoorData(buff, read, pos); //sensorID(1) : 출입 탐지
     	case 2:
-    		recvTempData(); // sensorID(2) : �پ��� Ž��
+    		recvTempData(); //sensorID(2) : 다양한 탐지
     	default :
     		System.out.println("Wrong SensorID...");
     	}
@@ -122,7 +122,7 @@ public class DeviceHandler implements Runnable {
     {
     	
     	
-    	while( read>pos ) //DATA segment���̸�ŭ �ݺ��Ͽ� DATA ����
+    	while( read>pos ) //DATA segment길이만큼 반복하여 DATA 추출
     	{
     		byte Header, Length;
     		
@@ -166,9 +166,9 @@ public class DeviceHandler implements Runnable {
 
     		}
     	}
-    	//TODO : ������ ����
+    	//TODO : 데이터 저장
     	
-    	//TODO : �޽��� �ڵ� ���� ����
+    	//TODO : 메시지 자동 전송 로직
     	//ArduinoCommunicationServer.broadcast(this.device.toString() + ": " + response);
         //ArduinoCommunicationServer.sendSignal(id, message);
     }

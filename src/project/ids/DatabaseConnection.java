@@ -10,8 +10,6 @@ import java.util.ArrayList;
 
 public class DatabaseConnection {
 	private DataSource dataSource;
-	private PreparedStatement pstmt;
-	private ResultSet resultSet;
 
 	private static DatabaseConnection instance = null;
 	public static DatabaseConnection getInstance() throws SQLException, NamingException {
@@ -63,8 +61,8 @@ public class DatabaseConnection {
 				"WHERE device.id = status.device_id " +
 				"AND status.id in (SELECT max(status.id) FROM status GROUP BY status.device_id)";
 		
-		pstmt = connection.prepareStatement(query);
-		resultSet = pstmt.executeQuery();
+		PreparedStatement pstmt = connection.prepareStatement(query);
+		ResultSet resultSet = pstmt.executeQuery();
 		
 		while(resultSet.next()) {
 			DeviceTableDTO deviceTableDTO = new DeviceTableDTO();
@@ -79,12 +77,12 @@ public class DatabaseConnection {
 		if(resultSet != null) resultSet.close();
 		if(pstmt != null) pstmt.close();
 		if(connection != null) connection.close();
-		
+	
 		return deviceList;
 	}
 	
 	// 전체 로그 조회
-	public ArrayList<LogTableDTO> selectLogTable() throws NamingException, SQLException {
+	public ArrayList<LogTableDTO> selectLogList() throws NamingException, SQLException {
 		Connection connection = getConnection();
 		ArrayList<LogTableDTO> logList = new ArrayList<>();
 		
@@ -94,8 +92,8 @@ public class DatabaseConnection {
 				"WHERE device.id = status.device_id " +
 				"ORDER BY status.time asc";
 		
-		pstmt = connection.prepareStatement(query);
-		resultSet = pstmt.executeQuery();
+		PreparedStatement pstmt = connection.prepareStatement(query);
+		ResultSet resultSet = pstmt.executeQuery();
 		
 		while(resultSet.next()) {
 			LogTableDTO logTableDTO = new LogTableDTO();
@@ -126,10 +124,12 @@ public class DatabaseConnection {
 		String statusDeleteQuery = "DELETE FROM status WHERE device_id=?";
 		String deviceDeleteQuery = "DELETE FROM device WHERE id=?";
 		
-		pstmt = connection.prepareStatement(statusDeleteQuery);
+		PreparedStatement pstmt = connection.prepareStatement(statusDeleteQuery);
 		pstmt.setInt(1, deviceID);
 		pstmt.executeUpdate();
 		
+		// 오류 날수도 있음
+		pstmt = connection.prepareStatement(deviceDeleteQuery);
 		pstmt.setInt(1, deviceID);
 		pstmt.executeUpdate();
 		
@@ -142,7 +142,7 @@ public class DatabaseConnection {
 		Connection connection = getConnection();
 		String query = "UPDATE device SET position=? WHERE id=?";
 		
-		pstmt = connection.prepareStatement(query);
+		PreparedStatement pstmt = connection.prepareStatement(query);
 		pstmt.setString(1, position);
 		pstmt.setInt(2, deviceID);
 		pstmt.executeUpdate(); 

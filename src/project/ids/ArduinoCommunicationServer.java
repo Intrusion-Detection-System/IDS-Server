@@ -30,12 +30,12 @@ public class ArduinoCommunicationServer {
                 
                 Device device = registerDevice(connectionSocket);
 
-                if (device.Mac.equals("")) //REQ�޽����� �ùٸ��� X
+                if (device.Mac.equals("")) // REQ메시지가 올바르지 X
                 {
                 	System.out.println("wrong register REQ...");
                 	connectionSocket.close();
                 }
-                else //REQ�� �ùٸ���.
+                else //REQ가 올바르다.
                 {
                 	DeviceHandler connection = new DeviceHandler(device);
                     (new Thread(connection)).start();
@@ -82,10 +82,8 @@ public class ArduinoCommunicationServer {
     	if (controlOP == 0xFF && OP == 1) {
     		System.arraycopy(buff, pos, tMac, 0, 6);
         	Mac = byteToHex(tMac);
-        	// TODO : MAC DB Ȯ�� & ID ��ȸ (MAC,sensorID, groupID, deviceID)
-        	// if(��ϵ��� ���� ����̽���) 
-        		device = new Device(sensorID, groupID, deviceID, Mac, connectionSocket);
-        	// else if(��ϵ� ����̽���)?
+        	// TODO : MAC DB 확인 & ID 조회 (MAC,sensorID, groupID, deviceID)
+    		device = new Device(sensorID, groupID, deviceID, Mac, connectionSocket);	
     	}
     	else {
     		device = new Device(connectionSocket);
@@ -94,7 +92,7 @@ public class ArduinoCommunicationServer {
     	return device;
     }
     
-    //Device list ǥ��
+    //Device list 표시
     private static String listDevices(String line) {
         String response = "";
 
@@ -138,7 +136,7 @@ public class ArduinoCommunicationServer {
     }
     
     
-    // �������� ȣ���� �޾� message �����ϴ� �޼ҵ�
+    // 관리자의 호출을 받아 message 전송하는 메소드
     public static void sendSignal(int id, String message) {
         for (Device device : deviceList) {
         	if (device.id == id) {
