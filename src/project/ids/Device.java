@@ -28,11 +28,6 @@ public class Device {
     	this.Mac = Mac;
     	this.socket = socket;
     }
-    
-    // getter
-	public short getDeviceID() {
-		return deviceID;
-	}
 
     public String toString() {
         //return "[" + this.id + "](" + this.pos + ")";
