@@ -1,0 +1,30 @@
+html, body {
+	text-align: center;
+	font-family: 나눔고딕, "나눔 고딕", NanumGothic, "Nanum Gothic", sans-serif;
+}
+
+#deviceTable {
+	text-align: center;
+	line-height: 2.5em;
+	border-collapse: collapse;
+	width: 60%;
+	margin: auto;
+	border-bottom: 2px solid #d8d8d8;
+}
+
+#head {
+	background-color: #c4ddfe;
+	font-weight: bold;
+}
+
+#disabledDevice {
+	background-color: #dcdcdc;
+}
+
+#logBox {
+	width: 60%;
+	margin: auto;
+	line-height: 2.5em;
+	text-align: center;
+	border: 1px solid #d8d8d8;
+}

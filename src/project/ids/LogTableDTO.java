@@ -3,16 +3,16 @@ package project.ids;
 import java.sql.Timestamp;
 
 public class LogTableDTO {
-	private Timestamp measurement_time;
+	private Timestamp measurementTime;
 	private String position;
 	private String action;
-	private int sensor_data;
+	private int sensorData;
 	
-	public Timestamp getMeasurement_time() {
-		return measurement_time;
+	public Timestamp getMeasurementTime() {
+		return measurementTime;
 	}
-	public void setMeasurement_time(Timestamp measurement_time) {
-		this.measurement_time = measurement_time;
+	public void setMeasurementTime(Timestamp measurementTime) {
+		this.measurementTime = measurementTime;
 	}
 	public String getPosition() {
 		return position;
@@ -26,10 +26,10 @@ public class LogTableDTO {
 	public void setAction(String action) {
 		this.action = action;
 	}
-	public int getSensor_data() {
-		return sensor_data;
+	public int getSensorData() {
+		return sensorData;
 	}
-	public void setSensor_data(int sensor_data) {
-		this.sensor_data = sensor_data;
+	public void setSensorData(int sensorData) {
+		this.sensorData = sensorData;
 	}
 }

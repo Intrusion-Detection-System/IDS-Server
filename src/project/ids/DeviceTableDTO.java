@@ -3,16 +3,16 @@ package project.ids;
 import java.sql.Timestamp;
 
 public class DeviceTableDTO {
-	private int device_id;
+	private int deviceID;
 	private String position;
 	private String action;
-	private Timestamp measurement_time;
+	private Timestamp measurementTime;
 	
-	public int getDevice_id() {
-		return device_id;
+	public int getDeviceID() {
+		return deviceID;
 	}
-	public void setDevice_id(int device_id) {
-		this.device_id = device_id;
+	public void setDeviceID(int deviceID) {
+		this.deviceID = deviceID;
 	}
 	public String getPosition() {
 		return position;
@@ -26,10 +26,10 @@ public class DeviceTableDTO {
 	public void setAction(String action) {
 		this.action = action;
 	}
-	public Timestamp getMeasurement_time() {
-		return measurement_time;
+	public Timestamp getMeasurementTime() {
+		return measurementTime;
 	}
-	public void setMeasurement_time(Timestamp measurement_time) {
-		this.measurement_time = measurement_time;
+	public void setMeasurementTime(Timestamp measurementTime) {
+		this.measurementTime = measurementTime;
 	}	
 }

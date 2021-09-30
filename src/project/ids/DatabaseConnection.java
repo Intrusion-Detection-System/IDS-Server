@@ -9,7 +9,7 @@ import java.sql.*;
 import java.util.ArrayList;
 
 public class DatabaseConnection {
-	private Connection connection;
+	private DataSource dataSource;
 	private PreparedStatement pstmt;
 	private ResultSet resultSet;
 
@@ -43,13 +43,17 @@ public class DatabaseConnection {
 	/* 운용 커넥션(커넥션풀) */
 	private DatabaseConnection() throws NamingException, SQLException {
 		Context context = new InitialContext();
-		DataSource dataSource = (DataSource) context.lookup("java:comp/env/jdbc/projectDB");
-		connection = dataSource.getConnection();
+		dataSource = (DataSource) context.lookup("java:comp/env/jdbc/idsDB");
+	}
+	
+	public Connection getConnection() throws SQLException {
+		return dataSource.getConnection();
 	}
 
 	// 등록된 디바이스 조회
 	// 여러 개의 검색결과가 있을 수 있으므로 ArrayList로 반환
-	public ArrayList<DeviceTableDTO> selectDeviceTable() throws NamingException, SQLException {
+	public ArrayList<DeviceTableDTO> selectRegisteredDevice() throws NamingException, SQLException {
+		Connection connection = getConnection();
 		ArrayList<DeviceTableDTO> deviceList = new ArrayList<>();
 		
 		// 조인된 결과는 별도의 테이블이 필요
@@ -64,10 +68,10 @@ public class DatabaseConnection {
 		
 		while(resultSet.next()) {
 			DeviceTableDTO deviceTableDTO = new DeviceTableDTO();
-			deviceTableDTO.setDevice_id(resultSet.getInt("device.id"));
+			deviceTableDTO.setDeviceID(resultSet.getInt("device.id"));
 			deviceTableDTO.setPosition(resultSet.getString("device.position"));
 			deviceTableDTO.setAction(resultSet.getString("status.action"));
-			deviceTableDTO.setMeasurement_time(resultSet.getTimestamp("time"));
+			deviceTableDTO.setMeasurementTime(resultSet.getTimestamp("time"));
 			
 			deviceList.add(deviceTableDTO);
 		}
@@ -81,6 +85,7 @@ public class DatabaseConnection {
 	
 	// 전체 로그 조회
 	public ArrayList<LogTableDTO> selectLogTable() throws NamingException, SQLException {
+		Connection connection = getConnection();
 		ArrayList<LogTableDTO> logList = new ArrayList<>();
 		
 		String query = 
@@ -94,10 +99,10 @@ public class DatabaseConnection {
 		
 		while(resultSet.next()) {
 			LogTableDTO logTableDTO = new LogTableDTO();
-			logTableDTO.setMeasurement_time(resultSet.getTimestamp("status.time"));
+			logTableDTO.setMeasurementTime(resultSet.getTimestamp("status.time"));
 			logTableDTO.setPosition(resultSet.getString("device.position"));
 			logTableDTO.setAction(resultSet.getString("status.action"));
-			logTableDTO.setSensor_data(resultSet.getInt("status.sensor_data"));
+			logTableDTO.setSensorData(resultSet.getInt("status.sensor_data"));
 			
 			logList.add(logTableDTO);
 		}
@@ -111,6 +116,7 @@ public class DatabaseConnection {
 	
 	// 디바이스 제거 (완전 삭제)
 	public void removeDevice(int deviceID) throws SQLException { // 지우고자하는 디바이스ID
+		Connection connection = getConnection();
 		/* ThreadController에서 제거
 		ArrayList<ThreadController> tcList = IoT_Server.getTcList();
 		tcList.get(i).getTco().setTco(10);
@@ -133,6 +139,7 @@ public class DatabaseConnection {
 	
 	// 디바이스 위치 업데이트
 	public void updateDevicePosition(int deviceID, String position) throws SQLException { // 바꾸고자하는 디바이스ID, 위치값
+		Connection connection = getConnection();
 		String query = "UPDATE device SET position=? WHERE id=?";
 		
 		pstmt = connection.prepareStatement(query);
