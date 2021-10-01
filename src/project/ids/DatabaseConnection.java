@@ -44,13 +44,13 @@ public class DatabaseConnection {
 		dataSource = (DataSource) context.lookup("java:comp/env/jdbc/idsDB");
 	}
 	
-	public Connection getConnection() throws SQLException {
+	private Connection getConnection() throws SQLException {
 		return dataSource.getConnection();
 	}
 
 	// 등록된 디바이스 조회
 	// 여러 개의 검색결과가 있을 수 있으므로 ArrayList로 반환
-	public ArrayList<DeviceTableDTO> selectRegisteredDevice() throws NamingException, SQLException {
+	public ArrayList<DeviceTableDTO> selectRegisteredDevice() throws SQLException {
 		Connection connection = getConnection();
 		ArrayList<DeviceTableDTO> deviceList = new ArrayList<>();
 		
@@ -82,7 +82,7 @@ public class DatabaseConnection {
 	}
 	
 	// 전체 로그 조회
-	public ArrayList<LogTableDTO> selectLogList() throws NamingException, SQLException {
+	public ArrayList<LogTableDTO> selectLogList() throws SQLException {
 		Connection connection = getConnection();
 		ArrayList<LogTableDTO> logList = new ArrayList<>();
 		
@@ -110,6 +110,38 @@ public class DatabaseConnection {
 		if(connection != null) connection.close();
 		
 		return logList;
+	}
+	
+	// 부분 로그 조회
+	public ArrayList<LogTableDTO> selectDeviceLogList(int deviceID) throws SQLException {
+		Connection connection = getConnection();
+		ArrayList<LogTableDTO> deviceLogList = new ArrayList<>();
+		
+		String query = 
+				"SELECT status.time, device.position, status.action, status.sensor_data " +
+				"FROM device, status " +
+				"WHERE device.id=? AND status.device_id=? " +
+				"ORDER BY status.time asc";
+		
+		PreparedStatement pstmt = connection.prepareStatement(query);
+		pstmt.setInt(1, deviceID);
+		pstmt.setInt(2, deviceID);
+		ResultSet resultSet = pstmt.executeQuery();
+		
+		while(resultSet.next()) {
+			LogTableDTO logTableDTO = new LogTableDTO();
+			logTableDTO.setMeasurementTime(resultSet.getTimestamp("time"));
+			logTableDTO.setPosition(resultSet.getString("position"));
+			logTableDTO.setAction(resultSet.getString("action"));
+			logTableDTO.setSensorData(resultSet.getInt("sensor_data"));
+			deviceLogList.add(logTableDTO);
+		}
+		
+		if(resultSet != null) resultSet.close();
+		if(pstmt != null) pstmt.close();
+		if(connection != null) connection.close();
+		
+		return deviceLogList;
 	}
 	
 	// 디바이스 제거 (완전 삭제)
