@@ -33,9 +33,9 @@
 <body>
 	<p style="color: gray;">위치 정보 수정</p>
 	<form action="request_revise.jsp" method="post">
-		<input text="text" id="position" name="position" placeholder="위치를 입력하세요.">
+		<input type="text" id="position" name="position" placeholder="위치를 입력하세요.">
 		<!-- request_revise 파라미터 전달용 -->
-		<input text="text" id="deviceID" name="deviceID" style="display: none">
+		<input type="text" id="deviceID" name="deviceID" style="display: none">
 		<br><br>
 		<button id="ok">확인</button>
 		<button type="button" id="cancel">취소</button>

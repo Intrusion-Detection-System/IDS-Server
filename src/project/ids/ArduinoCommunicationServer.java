@@ -1,29 +1,42 @@
 package project.ids;
-
 import java.io.*;
 import java.net.*;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Vector;;
+import java.util.Vector;
 
-class ArduinoCommunicationServer {
+import javax.naming.NamingException;
+
+//import IoT_Project.IoT_Server;
+
+public class ArduinoCommunicationServer {
     //private static List<Device> deviceList = new ArrayList<>();
     private static Vector<Device> deviceList = new Vector<>();
-    
+    private static Vector<UnregisteredDevice> unregisteredDevices = new Vector<>();
     private static final int CONTROL_fromDevice = 0xFF, CONTROL_fromServer = 0;
     private static final byte OP_REQ = 1, OP_RESPONSE = 2;
     private static final int DATA_EOF = 0xFF;
     private static final byte DATA_REQ_MAC = 1;
 
     public static void main(String argv[]) throws Exception {
-        startServer();
+        instance = ArduinoCommunicationServer.getInstance();
     }
 
+    private ArduinoCommunicationServer() {
+    	startServer();
+    }
+    
     public static void startServer() {
         int port = getPort();
-
+        System.out.println("TEST");
+        if(unregisteredDevices.size() == 0) {
+        	System.out.println("unregisteredDevices에 데이터 없음");
+        } else {
+        	System.out.println("unregisterDevice size: " + unregisteredDevices.size());
+        }
         System.out.println("Connecting to port " + port);
         try (ServerSocket welcomeSocket = new ServerSocket(port)) {
             boolean isRunning = true;
@@ -33,29 +46,62 @@ class ArduinoCommunicationServer {
                 Socket connectionSocket = welcomeSocket.accept();
                 System.out.println("connection received!");
                 
+                registerDevice(connectionSocket);
+                
+                //TODO : TRUE or FALSE
+                /**
+                 * 관리자가 그룹을 지정하고 승인을 누르면 아래 로직 진행
+                 */
+                
+                /*
                 Device device = registerDevice(connectionSocket);
 
                 if (device.Mac.equals("")) //REQ메시지가 올바르지 X
                 {
                 	System.out.println("wrong register REQ...");
                 	connectionSocket.close();
+                	//TODO : Error Message
                 }
                 else //REQ가 올바르다.
                 {
+                	
+                	//TODO : registerDeviceResponse();
+                    byte buff[] = new byte[1024];
+    	        	buff[0] = device.sensorID;
+    	        	buff[1] = device.groupID; //<--Group ID
+    	        	buff[2] = 0; //<--Device ID(LOW)
+    	        	buff[3] = 0; //<--Device ID(HIGH)
+    	        	buff[4] = 0; //server
+    	        	buff[5] = 2; //ANSWER
+    	        	buff[6] = 1; //HEAD[Group ID]
+    	        	buff[7] = 1; //<--Group ID
+    	        	buff[8] = 2; //HEAD[DeviceID]
+    	        	buff[9] = 2; //<--Device ID(HIGH)
+    	        	buff[10] = 3;//<--Device ID(LOW)
+    	        	buff[11] = (byte)0xFF;
+    	        	OutputStream os = device.socket.getOutputStream();
+    	        	os.write(buff); //FOR TEST...
+    	        	os.flush();
+    	        	//sendSignal(device.id, buff);
+    	        	/////////////////////////////
+    	        	
                 	DeviceHandler connection = new DeviceHandler(device);
                     (new Thread(connection)).start();
                     deviceList.add(device);
                     System.out.println("[" + device.sensorID + "-" + device.groupID + "-" + device.deviceID + "] device registered..." );
-                    //TODO : registerDeviceResponse();
+                    
+                  //TODO : registerDeviceResponse();
                 }
+            	*/
 
             }
         } catch (IOException e) {
 
         }
     }
-
-    private static Device registerDevice(Socket connectionSocket)
+    
+    // 수정
+    private static void registerDevice(Socket connectionSocket)
     {
     	int read=0, pos=0;
     	byte[] buff = new byte[1024];
@@ -76,18 +122,20 @@ class ArduinoCommunicationServer {
 		}
     	
     	
+    	
     	sensorID = buff[pos++]; //0
     	groupID = buff[pos++]; //1
     	
-    	System.arraycopy(buff, pos, tDeviceID, 0, 2);  pos += 2; //2~3
+    	System.arraycopy(buff, pos, tDeviceID, 0, 2);  pos += 2; //2-3
     	deviceID = ByteBuffer.wrap(tDeviceID).order(ByteOrder.LITTLE_ENDIAN).getShort();
     	
     	controlOP = buff[pos++]; //4
     	OP = buff[pos++];  //5
 
-    	
+    	System.out.println(sensorID+ " " + groupID+ " " + deviceID+ " " + controlOP+ " " + OP);
     	if ( ( (int)(controlOP & 0xFF) == CONTROL_fromDevice ) && OP == OP_REQ)	//from Device & registerREQ message... 
     	{
+    		System.out.println("IN");
     		device = new Device(sensorID, connectionSocket);
     		while(true)
     		{
@@ -104,8 +152,20 @@ class ArduinoCommunicationServer {
         				System.arraycopy(buff, pos, tMac, 0, 6); pos += 6;
         	        	Mac = byteToHex(tMac);
         	        	device.Mac = Mac;
-        	    		// TODO : DB - get (GroupID & DeviceID) with MAC
-        	        	// TODO: group id, device id 정해서 디비 등록
+        	        	
+        	        	// 등록요청된 디바이스 객체 db에 저장
+                        
+        	        	try {
+        	        		DatabaseConnection.getInstance().insertRequestedDevice(sensorID, Mac);
+        	        	} catch (SQLException e1) {
+							e1.printStackTrace();
+						} catch (NamingException e2) {
+							e2.printStackTrace();
+						} catch (ClassNotFoundException e3) {
+							e3.printStackTrace();
+						}
+                        
+        	        	// TODO : DB - get (GroupID & DeviceID) with MAC --> Device에 정보저장 하세요
         	        	break;
         	        //TODO : DATA_REQ + alpha
         	        default :
@@ -115,12 +175,13 @@ class ArduinoCommunicationServer {
 
         	///device = new Device(sensorID, groupID, deviceID, Mac, connectionSocket);
     	}
+    	// 이미 등록한적이 있으면
+    	/*
     	else
     	{
     		device = new Device(connectionSocket);
     	}
-    	
-    	return device;
+    	*/
     }
     
     
@@ -168,26 +229,27 @@ class ArduinoCommunicationServer {
         return defaultPort;
     }
     
-    /* 1010
-    // 관리자의 호출을 받아 message 전송하는 메소드
-    public static void sendSignal(int id,String message) {
+    
+    
+    public static void sendSignal(int id, byte[] messages) {
         for (Device device : deviceList) {
         	if (device.id == id) {
 	            try {
 	                DataOutputStream sendToClient = new DataOutputStream(device.socket.getOutputStream());
-	                sendToClient.writeBytes(message);
+	                //sendToClient.writeBytes();
+	                sendToClient.write(messages);
 	            } catch (IOException e) {
 	
 	            }
         	}
         }
     }
-    */
     
  // 관리자의 호출을 받아 message 전송하는 메소드
-    public static void sendSignal(byte id,String message) {
+    //TODO : opcode 4-제어, 5-밤범,6-비방범,10-삭제 
+    public static void sendSignal(int id, byte opcode) {
         for (Device device : deviceList) {
-        	if (device.sensorID == id) {
+        	if (device.id == id) {
 	            try {
 	            	OutputStream os= device.socket.getOutputStream();
 	            	ByteBuffer sendByteBuffer = null;
@@ -199,13 +261,14 @@ class ArduinoCommunicationServer {
 	            	sendByteBuffer.put(device.groupID);
 	            	sendByteBuffer.putShort(device.deviceID);
 	            	
-	            	sendByteBuffer.put((byte)0);
-	            	sendByteBuffer.put((byte)4);
+	            	sendByteBuffer.put((byte)0); //controlOP
+	            	sendByteBuffer.put((byte)opcode);
 	            	
 	            	sendByteBuffer.put((byte)1);
 	            	sendByteBuffer.put((byte)1);
 	            	sendByteBuffer.put((byte)2);
-	            	sendByteBuffer.put((byte)0xFF);
+	            	byte temp = (byte)(255 &(byte) 0xFF);
+	            	sendByteBuffer.put(temp);
 	            	
 	            } catch (IOException e) {
 	
@@ -214,4 +277,55 @@ class ArduinoCommunicationServer {
         }
     }
     
+    public static void sendSignal(byte sensorID, byte groupID, short deviceID, byte opcode, byte state) {
+    	System.out.println("3");
+        for (Device device : deviceList) {
+        	System.out.println("4");
+        	if (device.sensorID == sensorID && device.groupID == groupID && device.deviceID == deviceID) {
+        		System.out.println("5");
+	            try {
+	            	OutputStream os= device.socket.getOutputStream();
+	            	byte buff[] = new byte[1024];
+    	        	buff[0] = device.sensorID;
+    	        	buff[1] = device.groupID; //<--Group ID
+    	        	buff[2] = 0; //<--Device ID(LOW)
+    	        	buff[3] = 0; //<--Device ID(HIGH)
+	                
+	            	buff[4]=(byte)0; //controlOP
+	            	buff[5]=opcode; //controlOP
+	            	
+	            	buff[6]=(byte)1; //head
+	            	buff[7]=(byte)1; //length
+	            	buff[8]=state;   //data
+	            	buff[9]= (byte)(255 &(byte) 0xFF); //EOF
+	            	
+    	        	os.write(buff); //FOR TEST...
+    	        	os.flush();
+    	        	
+	            } catch (IOException e) {
+	
+	            }
+        	}
+        }
+    }
+    
+   //singleton
+  	private static ArduinoCommunicationServer instance = null;
+  	public static ArduinoCommunicationServer getInstance() throws IOException {
+  		System.out.println("Get Instance");
+  		if(instance == null) {
+  			System.out.println("New one");
+  			instance = new ArduinoCommunicationServer();
+  		}
+  		return instance;
+  	}
+  	
+  	// getter
+  	public static Vector<Device> getDeviceList() {
+		return deviceList;
+	}
+
+	public static Vector<UnregisteredDevice> getUnregisteredDevices() {
+		return unregisteredDevices;
+	}
 }
