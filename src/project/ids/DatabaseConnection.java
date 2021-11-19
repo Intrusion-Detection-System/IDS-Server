@@ -10,7 +10,7 @@ import java.util.ArrayList;
 
 public class DatabaseConnection {
 	private DataSource dataSource;
-	private static final String jdbcDriver = "jdbc:apache:commons:dbcp:IDS_DB";
+	private static final String jdbcDriver = "jdbc:apache:commons:dbcp:/pool";
 	private Connection connection = null;
 	private static DatabaseConnection instance = null;
 	public static DatabaseConnection getInstance() throws SQLException, NamingException, ClassNotFoundException {
@@ -20,7 +20,7 @@ public class DatabaseConnection {
 		return instance;
 	}
 	
-	/* 테스트용 커넥션
+	/* 테스트용 커넥션 */
 	public DatabaseConnection() {
 		String jdbcUrl = "jdbc:mysql://localhost:3306/IDS_DB?serverTimezone=Asia/Seoul";
 		String dbId = "ks";
@@ -37,14 +37,19 @@ public class DatabaseConnection {
 			e.printStackTrace();
 		}
 	}
-	*/
 	
-	/* 운용 커넥션(커넥션풀) */
+	/* 운용 커넥션(커넥션풀) 
 	private DatabaseConnection() throws NamingException, SQLException, ClassNotFoundException {
+		try {
+			Class.forName("com.mysql.cj.jdbc.Driver");
+		} catch (ClassNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		//Class.forName("com.mysql.cj.jdbc.Driver");
 		//Context context = new InitialContext();
 		//dataSource = (DataSource) context.lookup("java:comp/env/jdbc/IDS_DB");
-	}
+	} */
 	
 	//private Connection getConnection() throws SQLException {
 	//	return dataSource.getConnection();
@@ -53,7 +58,7 @@ public class DatabaseConnection {
 	// 등록된 디바이스 조회
 	// 여러 개의 검색결과가 있을 수 있으므로 ArrayList로 반환
 	public ArrayList<DeviceTableDTO> selectRegisteredDevice() throws SQLException {
-		connection = DriverManager.getConnection(jdbcDriver);
+		//connection = DriverManager.getConnection(jdbcDriver);
 		//Connection connection = getConnection();
 		ArrayList<DeviceTableDTO> deviceList = new ArrayList<>();
 		
@@ -87,7 +92,7 @@ public class DatabaseConnection {
 	// 전체 로그 조회
 	public ArrayList<LogTableDTO> selectLogList() throws SQLException {
 		//Connection connection = getConnection();
-		connection = DriverManager.getConnection(jdbcDriver);
+		//connection = DriverManager.getConnection(jdbcDriver);
 		ArrayList<LogTableDTO> logList = new ArrayList<>();
 		
 		String query = 
@@ -118,7 +123,7 @@ public class DatabaseConnection {
 	
 	// 부분 로그 조회
 	public ArrayList<LogTableDTO> selectDeviceLogList(int deviceID) throws SQLException {
-		connection = DriverManager.getConnection(jdbcDriver);
+		//connection = DriverManager.getConnection(jdbcDriver);
 		//Connection connection = getConnection();
 		ArrayList<LogTableDTO> deviceLogList = new ArrayList<>();
 		
@@ -151,7 +156,7 @@ public class DatabaseConnection {
 	
 	// locations 테이블 조회
 	public ArrayList<LocationDTO> selectLocationsTable() throws SQLException {
-		connection = DriverManager.getConnection(jdbcDriver);
+		//connection = DriverManager.getConnection(jdbcDriver);
 		//Connection connection = getConnection();
 		ArrayList<LocationDTO> locationList = new ArrayList<>();
 		
@@ -175,7 +180,7 @@ public class DatabaseConnection {
 	
 	// 디바이스 제거 (완전 삭제)
 	public void removeDevice(int deviceID) throws SQLException { // 지우고자하는 디바이스ID
-		connection = DriverManager.getConnection(jdbcDriver);
+		//connection = DriverManager.getConnection(jdbcDriver);
 		//Connection connection = getConnection();
 		/* ThreadController에서 제거
 		ArrayList<ThreadController> tcList = IoT_Server.getTcList();
@@ -201,7 +206,7 @@ public class DatabaseConnection {
 	
 	// 디바이스 추가
 	public void insertDevice(byte sensorID, byte groupID, byte deviceID, String mac) throws SQLException {
-		connection = DriverManager.getConnection(jdbcDriver);
+		//connection = DriverManager.getConnection(jdbcDriver);
 		//Connection connection = getConnection();
 		String query = "INSERT INTO devices VALUES(?, ?, ?, ?, ?)";
 		
@@ -219,14 +224,13 @@ public class DatabaseConnection {
 	
 	// 등록요청된 디바이스 저장
 	public void insertRequestedDevice(byte sensorID, String mac) throws SQLException {
-		System.out.println("insertRD");
-		connection = DriverManager.getConnection(jdbcDriver);
+		//connection = DriverManager.getConnection(jdbcDriver);
 		//Connection connection = getConnection();
 		String query = "INSERT INTO unregistered_devices VALUES(?, ?)";
 		
 		PreparedStatement pstmt = connection.prepareStatement(query);
-		pstmt.setByte(1, sensorID);
-		pstmt.setString(2, mac);
+		pstmt.setString(1, mac);
+		pstmt.setInt(2, sensorID);
 		pstmt.executeUpdate();
 		
 		if(pstmt != null) pstmt.close();
@@ -235,7 +239,7 @@ public class DatabaseConnection {
 	
 	// 등록요청된 디바이스 select
 	public ArrayList<UnregisteredDevice> selectUnregisteredDevices() throws SQLException {
-		connection = DriverManager.getConnection(jdbcDriver);
+		//connection = DriverManager.getConnection(jdbcDriver);
 		//Connection connection = getConnection();
 		ArrayList<UnregisteredDevice> unregisteredDeviceList = new ArrayList<>();
 		

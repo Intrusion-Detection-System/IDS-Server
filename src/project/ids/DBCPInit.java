@@ -29,7 +29,7 @@ public class DBCPInit extends HttpServlet {
     private void initConnectionPool() {
         try {
         	System.out.println("DBCP initservlet run");
-            String jdbcUrl = "jdbc:mysql://localhost:3306/IDS_DB?serverTimezone=Asia/Seoul";
+            String jdbcUrl = "jdbc:mysql://localhost:3306/IDS_DB?useUnicode=true&characterEncoding=utf8";
             String username = "ks";
             String pw = "ks";
             
@@ -66,7 +66,7 @@ public class DBCPInit extends HttpServlet {
             
             PoolingDriver driver = (PoolingDriver) DriverManager.getDriver("jdbc:apache:commons:dbcp:");
             //위에서 커넥션 풀 드라이버에 생성한 커넥션 풀을 등록한다. 이름은
-            driver.registerPool("IDS_DB", connectionPool);
+            driver.registerPool("pool", connectionPool);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

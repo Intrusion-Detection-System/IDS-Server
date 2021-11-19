@@ -154,18 +154,15 @@ public class ArduinoCommunicationServer {
         	        	device.Mac = Mac;
         	        	
         	        	// 등록요청된 디바이스 객체 db에 저장
-                        
-        	        	try {
-        	        		DatabaseConnection.getInstance().insertRequestedDevice(sensorID, Mac);
-        	        	} catch (SQLException e1) {
-							e1.printStackTrace();
-						} catch (NamingException e2) {
-							e2.printStackTrace();
-						} catch (ClassNotFoundException e3) {
-							e3.printStackTrace();
+                        DatabaseConnection dbConnection = new DatabaseConnection();
+						try {
+							dbConnection.insertRequestedDevice(sensorID, Mac);
+						} catch (SQLException e) {
+							// TODO Auto-generated catch block
+							System.out.println("ERROR: 이미 테이블에 등록된 디바이스입니다.");
 						}
-                        
-        	        	// TODO : DB - get (GroupID & DeviceID) with MAC --> Device에 정보저장 하세요
+						
+						// TODO : DB - get (GroupID & DeviceID) with MAC --> Device에 정보저장 하세요
         	        	break;
         	        //TODO : DATA_REQ + alpha
         	        default :

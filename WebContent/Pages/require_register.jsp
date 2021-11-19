@@ -16,8 +16,8 @@
 </head>
 <body>
 	<%
-	ArrayList<UnregisteredDevice> unregisteredDeviceList = new ArrayList();
-	DatabaseConnection.getInstance().selectUnregisteredDevices();
+	Vector<UnregisteredDevice> unregisteredDeviceList = arduinoServer.getUnregisteredDevices();
+	
 	
 	if(unregisteredDeviceList.size() > 0) {
 		unregisteredDeviceList.get(0).toString();

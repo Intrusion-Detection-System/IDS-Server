@@ -4,6 +4,10 @@
    <servlet>
         <servlet-name>DBCPInit</servlet-name>
         <servlet-class>project.ids.DBCPInit</servlet-class>
+        <init-param>
+        	<param-name>jdbcDriver</param-name>
+        	<param-value>com.mysql.cj.jdbc.Driver</param-value>
+    	</init-param>
         <load-on-startup>1</load-on-startup>
     </servlet>
 </web-app>
