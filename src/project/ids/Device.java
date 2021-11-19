@@ -1,5 +1,4 @@
 package project.ids;
-
 import java.net.Socket;
 import java.util.UUID;
 
@@ -11,17 +10,28 @@ public class Device {
 	short deviceID;
 	String Mac= "";
     
+	//tmp
+    public Device( Socket socket) {
+        
+        this.socket = socket;
+    }
+	
+	public Device(byte sensorID, Socket socket)
+    {
+    	this.sensorID = sensorID;
+    	this.socket = socket;
+    }
+    
+	
     public Device(int id, Socket socket) {
         this.id = id;
         this.socket = socket;
     }
     
-    //tmp
-    public Device(Socket socket) {     
-        this.socket = socket;
-    }
     
-    public Device(byte sensorID, byte groupID, short deviceID, String Mac, Socket socket) {
+    
+    public Device(byte sensorID, byte groupID, short deviceID, String Mac, Socket socket)
+    {
     	this.sensorID = sensorID;
     	this.groupID = groupID;
     	this.deviceID = deviceID;

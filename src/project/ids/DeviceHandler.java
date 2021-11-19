@@ -1,5 +1,4 @@
 package project.ids;
-
 import java.io.*;
 import java.net.Socket;
 import java.nio.ByteBuffer;
@@ -25,11 +24,6 @@ public class DeviceHandler implements Runnable {
     public void handleMessage() throws IOException {
     	//To Read
         BufferedInputStream bis = new BufferedInputStream(this.device.socket.getInputStream());
-        //InputStream inputStream = this.device.socket.getInputStream();
-        //InputStreamReader reader = new InputStreamReader(inputStream);
-        //BufferedReader buffer = new BufferedReader(reader);
-        
-        
         //To write
         OutputStream outputStream = this.device.socket.getOutputStream();
         //DataOutputStream backToClient = new DataOutputStream(outputStream);
@@ -40,6 +34,7 @@ public class DeviceHandler implements Runnable {
         }
     }
 
+    
     private void readMessage(BufferedInputStream bis)
     {
     	int read=0, pos=0;
@@ -49,78 +44,103 @@ public class DeviceHandler implements Runnable {
     	byte sensorID, groupID, controlOP, OP;
     	short deviceID;
     	
+    	
     	try {
 			read = bis.read(buff, 0, 1024);
 		} catch (IOException e) {
 			System.out.println("Socket.read ERROR");
 		}
-    		
+    	
+    	/* ID */
     	sensorID = buff[pos++];
     	groupID = buff[pos++];
     	
-    	System.arraycopy(buff, pos, tDeviceID, 0, 2);
+    	System.arraycopy(buff, pos, tDeviceID, 0, 2);  pos += 2;
     	deviceID = ByteBuffer.wrap(tDeviceID).order(ByteOrder.LITTLE_ENDIAN).getShort();
-    	pos += 2;
     	
+    	/* OP */
     	controlOP = buff[pos++];
     	OP = buff[pos++];
     	
-    	if (controlOP == 0xFF && isRightDevice(sensorID, groupID, deviceID))
+    	/* DATA */
+    	if ((int)(controlOP&0xFF) == 0xFF && isRightDevice(sensorID, groupID, deviceID))
     	{
     		switch(OP)
     		{
     		case 0:
     			break;
-    		case 1:
+    			
+    		case 1:	//OP_REQ
     			System.out.println("DEV_REQ");
     			break;
-    		case 2:
-    			System.out.println("DEV_ANSWER"); 
-    			break;
-    		case 3:
+    			
+    		case 2:	//OP_RESPONSE
+    			System.out.println("DEV_ANSWER"); break;
+    			
+    		case 3:	//OP_DATA
     			System.out.println("DATA"); 
-    			recvData(buff, read, pos);
+    			recvData(buff, read, pos);  
+    			ArduinoCommunicationServer.sendSignal(sensorID, "hi");
     			break;
-    		case 4:
+    		case 4:	//OP_CONTROL
     			System.out.println("CONTROL"); break;
-    		case 5:
+    			
+    		case 5:	//OP_MODE_CHANGE
     			System.out.println("MODE CAHNGE"); break;
+    			
     		case 9:
     			 break;
-    		case 10:
-    			System.out.println("RESET"); 
-    			resetDevice();
-    			break;
-    		case 11:
+    			 
+    		case 10:	//OP_RESET
+    			System.out.println("RESET");
+    			
+    			resetDevice();	break;
+    			
+    		case 11:	//OP_ERROR
     			System.out.println("ERROR"); break;
+    			
     		default :
     			System.out.println("예외처리");
     		}
     	}
+    	else if(! ((int)(controlOP&0xFF) == 0xFF))
+    	{
+    		System.out.println("Error - ControlOP is not Device");
+    	}
     	else
     	{
-    		System.out.println("Error");
+    		System.out.println("Error - ID Segment Error");
     	}
+    	
+    	
+    	
+    	
     }
 
     private void recvData(byte[] buff, int read, int pos) //Data, DataLength, pos
     {
-    	
+    	/* TODO : device 추가될 때 마다 이곳에 추가*/
     	switch (device.sensorID)
     	{
-    	case 1:
-    		recvDoorData(buff, read, pos); //sensorID(1) : 출입 탐지
-    	case 2:
-    		recvTempData(); //sensorID(2) : 다양한 탐지
+    	case 1: //sensorID(1) : 출입 탐지
+    		recvDoorData(buff, read, pos); 
+    		break;
+    	case 2: //sensorID(2) : 온도 탐지 ex...
+    		recvTempData(); 
+    		break;
     	default :
-    		System.out.println("Wrong SensorID...");
+    		System.out.println("Wrong SensorID....");
+    		break;
     	}
 
     }
     
+    // header 1 -> 문의 열림/닫힘
+    // header 2 -> 문의 각도(센서값)
+    
     public void recvDoorData(byte[] buff, int read, int pos)
     {
-    	
+    	final int EOF = 0xFF, DATA_STRING = 0xFE;
     	
     	while( read>pos ) //DATA segment길이만큼 반복하여 DATA 추출
     	{
@@ -129,8 +149,10 @@ public class DeviceHandler implements Runnable {
     		Header = buff[pos++];
     		Length = buff[pos++];
     		
-
-    		if (Length == 0xFE)	//String DATA
+    		if ((int)(Header&0xFF) == EOF)
+    			break;
+    		
+    		if (((int)Length & 0xFF) == DATA_STRING)	//String DATA
     		{
     			String Data = "";
     			while(buff[pos] != '\n')
@@ -140,19 +162,19 @@ public class DeviceHandler implements Runnable {
     		}
     		else	//Non-String Data
     		{
-    			if(Length == 1)
+    			if(Length == 1) //byte
     			{
     				byte Data = buff[pos++];
     				System.out.println("Data : [Header:"+Header+"], [Length:"+Length+"], [Data:"+Data+"]");
     			}
-    			else if(Length == 2)
+    			else if(Length == 2) //short
     			{
     				short Data; byte[] tData = new byte[2];
     				System.arraycopy(buff, pos, tData, 0, 2); pos += 2;
     		    	Data = ByteBuffer.wrap(tData).order(ByteOrder.LITTLE_ENDIAN).getShort();
     		    	System.out.println("Data : [Header:"+Header+"], [Length:"+Length+"], [Data:"+Data+"]");
     			}
-    			else if(Length == 4)
+    			else if(Length == 4) //int
     			{
     				int Data; byte[] tData = new byte[4];
     				System.arraycopy(buff, pos, tData, 0, 4); pos += 4;
@@ -167,20 +189,20 @@ public class DeviceHandler implements Runnable {
     		}
     	}
     	//TODO : 데이터 저장
-    	
+    	// 센서값 데이터베이스 저장
     	//TODO : 메시지 자동 전송 로직
     	//ArduinoCommunicationServer.broadcast(this.device.toString() + ": " + response);
         //ArduinoCommunicationServer.sendSignal(id, message);
+    	// todo : 방범 모드 / 비방범 모드 웹 -> 서버 메시지 전송 할수 있게
     }
     
-    public void recvTempData()
+    public void recvTempData()	//sensorID(2) EXAMPLE...
     {
     }
     
     private void resetDevice()
     {
     	try {
-    		
     		isRunning = false;
 			device.socket.close();
 			
