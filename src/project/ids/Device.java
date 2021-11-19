@@ -9,6 +9,8 @@ public class Device {
     byte sensorID, groupID, controlOP, OP;
 	short deviceID;
 	String Mac= "";
+	
+	boolean auto = true;
     
 	//tmp
     public Device( Socket socket) {
@@ -33,11 +35,18 @@ public class Device {
     public Device(byte sensorID, byte groupID, short deviceID, String Mac, Socket socket)
     {
     	this.sensorID = sensorID;
-    	this.groupID = groupID;
+    	this.groupID = groupID; 
     	this.deviceID = deviceID;
     	this.Mac = Mac;
     	this.socket = socket;
+    	
     }
+    
+    public void setAutoMode(boolean auto)
+    {
+    	this.auto = auto;
+    }
+    
 
     public String toString() {
         //return "[" + this.id + "](" + this.pos + ")";
