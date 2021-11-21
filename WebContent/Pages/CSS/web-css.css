@@ -12,6 +12,15 @@ html, body {
 	border-bottom: 2px solid #d8d8d8;
 }
 
+#unregisteredDevice {
+	text-align: center;
+	line-height: 2.5em;
+	border-collapse: collapse;
+	width: 70%;
+	margin: auto;
+	border-bottom: 2px solid #d8d8d8;
+}
+
 #head {
 	background-color: #c4ddfe;
 	font-weight: bold;

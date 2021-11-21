@@ -3,22 +3,36 @@ package project.ids;
 import java.sql.Timestamp;
 
 public class DeviceTableDTO {
-	private int deviceID;
-	private String position;
+	private byte sensorID;
+	private byte groupID;
+	private byte deviceID;
+	private String location;
 	private String action;
 	private Timestamp measurementTime;
 	
-	public int getDeviceID() {
+	public byte getSensorID() {
+		return sensorID;
+	}
+	public void setSensorID(byte sensorID) {
+		this.sensorID = sensorID;
+	}
+	public byte getGroupID() {
+		return groupID;
+	}
+	public void setGroupID(byte groupID) {
+		this.groupID = groupID;
+	}
+	public byte getDeviceID() {
 		return deviceID;
 	}
-	public void setDeviceID(int deviceID) {
+	public void setDeviceID(byte deviceID) {
 		this.deviceID = deviceID;
 	}
-	public String getPosition() {
-		return position;
+	public String getLocation() {
+		return location;
 	}
-	public void setPosition(String position) {
-		this.position = position;
+	public void setLocation(String location) {
+		this.location = location;
 	}
 	public String getAction() {
 		return action;
@@ -31,5 +45,5 @@ public class DeviceTableDTO {
 	}
 	public void setMeasurementTime(Timestamp measurementTime) {
 		this.measurementTime = measurementTime;
-	}	
+	}
 }
