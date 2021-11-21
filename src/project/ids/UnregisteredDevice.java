@@ -1,13 +1,13 @@
 package project.ids;
 
 public class UnregisteredDevice {
-	private int sensorID;
+	private byte sensorID;
 	private String mac;
 	
-	public int getSensorID() {
+	public byte getSensorID() {
 		return sensorID;
 	}
-	public void setSensorID(int sensorID) {
+	public void setSensorID(byte sensorID) {
 		this.sensorID = sensorID;
 	}
 	public String getMac() {

@@ -19,13 +19,19 @@ String mac = request.getParameter("mac");
 	<script type="text/javascript">
 		$(document).ready(function() {
 			// AJAX
-			$("#locations").load("table_location")
+			//$("#locations").load("table_location")
 		})
 	</script>
 </head>
 <body>
 	<!-- group_id, position, 라디오 박스 -->
-	<form action="request_register" method="post">
+	<table>
+		<tr>
+			<td width="200">그룹ID</td>
+			<td width="200">위치</td>
+			<td width="50"></td>
+		</tr>
+	
 		<%
 		DatabaseConnection dbConnection = DatabaseConnection.getInstance(); 
 		ArrayList<LocationDTO> locationList = dbConnection.selectLocationsTable();
@@ -33,16 +39,25 @@ String mac = request.getParameter("mac");
 			byte groupID = locationList.get(i).getGroupID();
 			String location = locationList.get(i).getLocation();
 		%>
-		<input type="text" id="sensorID" value=<%=sensorID %> style="display: none">
-		<input type="text" id="mac" value=<%=mac %> style="display: none">
-		<input type="text" id="groupID" value=<%=groupID%>>
-		<input type="text" id="location" value=<%=location %>>
-		<!-- group_id는 DB로, location은 웹 페이지 table_device로 -->
-		<input type="radio" name="button" value=<%=groupID %>>
+		<tr>
+			<td width="200"><%=groupID%></td>
+			<td width="200"><%=location %></td>
+			<td width="50">
+				<form action="request_register.jsp" method="post">
+					<input type="text" value="<%=sensorID%>" name="sensorID" style="display: none;" readonly>
+					<input type="text" value="<%=groupID%>" name="groupID" style="display: none;" readonly>
+					<input type="text" value="<%=mac%>" name="mac" style="display: none;" readonly>
+					<input type="text" value="<%=location%>" name="location" style="display: none;" readonly>
+					<button type="submit" value="등록"></button>
+				</form>
+			</td>
+		</tr>
+		
 		<%	
 		}
 		%>
-		<input type="submit" value="등록">
-	</form>
+		
+	
+	</table>
 </body>
 </html>

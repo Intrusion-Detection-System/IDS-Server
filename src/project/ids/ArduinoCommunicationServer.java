@@ -32,11 +32,6 @@ public class ArduinoCommunicationServer {
     public static void startServer() {
         int port = getPort();
         System.out.println("TEST");
-        if(unregisteredDevices.size() == 0) {
-        	System.out.println("unregisteredDevices에 데이터 없음");
-        } else {
-        	System.out.println("unregisterDevice size: " + unregisteredDevices.size());
-        }
         System.out.println("Connecting to port " + port);
         try (ServerSocket welcomeSocket = new ServerSocket(port)) {
             boolean isRunning = true;
