@@ -31,7 +31,6 @@ public class ArduinoCommunicationServer {
     
     public static void startServer() {
         int port = getPort();
-        System.out.println("TEST");
         System.out.println("Connecting to port " + port);
         try (ServerSocket welcomeSocket = new ServerSocket(port)) {
             boolean isRunning = true;
@@ -41,63 +40,21 @@ public class ArduinoCommunicationServer {
                 Socket connectionSocket = welcomeSocket.accept();
                 System.out.println("connection received!");
                 
-                registerDevice(connectionSocket);
-                
-                //TODO : TRUE or FALSE
-                /**
-                 * 관리자가 그룹을 지정하고 승인을 누르면 아래 로직 진행
-                 */
-                
-                /*
+                // 새로운 등록
                 Device device = registerDevice(connectionSocket);
-
-                if (device.Mac.equals("")) //REQ메시지가 올바르지 X
-                {
-                	System.out.println("wrong register REQ...");
-                	connectionSocket.close();
-                	//TODO : Error Message
+                if(device != null) { // 이미 등록된 디바이스
+                    addDevice(device, connectionSocket);
                 }
-                else //REQ가 올바르다.
-                {
-                	
-                	//TODO : registerDeviceResponse();
-                    byte buff[] = new byte[1024];
-    	        	buff[0] = device.sensorID;
-    	        	buff[1] = device.groupID; //<--Group ID
-    	        	buff[2] = 0; //<--Device ID(LOW)
-    	        	buff[3] = 0; //<--Device ID(HIGH)
-    	        	buff[4] = 0; //server
-    	        	buff[5] = 2; //ANSWER
-    	        	buff[6] = 1; //HEAD[Group ID]
-    	        	buff[7] = 1; //<--Group ID
-    	        	buff[8] = 2; //HEAD[DeviceID]
-    	        	buff[9] = 2; //<--Device ID(HIGH)
-    	        	buff[10] = 3;//<--Device ID(LOW)
-    	        	buff[11] = (byte)0xFF;
-    	        	OutputStream os = device.socket.getOutputStream();
-    	        	os.write(buff); //FOR TEST...
-    	        	os.flush();
-    	        	//sendSignal(device.id, buff);
-    	        	/////////////////////////////
-    	        	
-                	DeviceHandler connection = new DeviceHandler(device);
-                    (new Thread(connection)).start();
-                    deviceList.add(device);
-                    System.out.println("[" + device.sensorID + "-" + device.groupID + "-" + device.deviceID + "] device registered..." );
-                    
-                  //TODO : registerDeviceResponse();
-                }
-            	*/
-
             }
         } catch (IOException e) {
 
         }
     }
     
-    // 수정
-    private static void registerDevice(Socket connectionSocket)
-    {
+    /**
+     * 로직수정: 연결요청이 들어오면 바로 DB에 등록 -> 등록대기상태로 두고 관리자 승인하에 등록
+     */
+    private static Device registerDevice(Socket connectionSocket) {
     	int read=0, pos=0;
     	byte[] buff = new byte[1024];
     	byte[] tDeviceID = new byte[2];
@@ -106,8 +63,7 @@ public class ArduinoCommunicationServer {
     	byte sensorID, groupID, controlOP, OP;
     	short deviceID;
     	String Mac; byte[] tMac = new byte[6]; 
-    	Device device;
-    	
+    	Device device = null;
     	
     	try {
     		bis = new BufferedInputStream(connectionSocket.getInputStream());
@@ -115,8 +71,6 @@ public class ArduinoCommunicationServer {
 		} catch (IOException e) {
 			System.out.println("Socket.read ERROR");
 		}
-    	
-    	
     	
     	sensorID = buff[pos++]; //0
     	groupID = buff[pos++]; //1
@@ -152,33 +106,76 @@ public class ArduinoCommunicationServer {
                         DatabaseConnection dbConnection = new DatabaseConnection();
 						try {
 							dbConnection.insertRequestedDevice(sensorID, Mac);
+							unregisteredDevices.add(new UnregisteredDevice(Mac, connectionSocket)); // request_register.jsp 에서 등록 처리
 						} catch (SQLException e) {
 							// TODO Auto-generated catch block
-							System.out.println("ERROR: 이미 테이블에 등록된 디바이스입니다.");
 						}
 						
-						// TODO : DB - get (GroupID & DeviceID) with MAC --> Device에 정보저장 하세요
         	        	break;
         	        //TODO : DATA_REQ + alpha
         	        default :
         	        	break;
         		}
     		}
-
-        	///device = new Device(sensorID, groupID, deviceID, Mac, connectionSocket);
     	}
     	// 이미 등록한적이 있으면
-    	/*
     	else
     	{
     		device = new Device(connectionSocket);
     	}
-    	*/
+    	
+    	return device;
     }
     
+    // 디바이스 등록 승인
+    public static void addDevice(Device device, Socket connectionSocket) throws IOException {
+    	if (device.Mac.equals("")) //REQ메시지가 올바르지 X
+        {
+        	System.out.println("wrong register REQ...");
+        	connectionSocket.close();
+        	//TODO : Error Message
+        }
+        else //REQ가 올바르다.
+        {
+        	
+        	//TODO : registerDeviceResponse();
+            byte buff[] = new byte[1024];
+        	buff[0] = device.sensorID;
+        	buff[1] = device.groupID; //<--Group ID
+        	buff[2] = 0; //<--Device ID(LOW)
+        	buff[3] = 0; //<--Device ID(HIGH)
+        	buff[4] = 0; //server
+        	buff[5] = 2; //ANSWER
+        	buff[6] = 1; //HEAD[Group ID]
+        	buff[7] = 1; //<--Group ID
+        	buff[8] = 2; //HEAD[DeviceID]
+        	buff[9] = 2; //<--Device ID(HIGH)
+        	buff[10] = 3;//<--Device ID(LOW)
+        	buff[11] = (byte)0xFF;
+        	OutputStream os = device.socket.getOutputStream();
+        	os.write(buff); //FOR TEST...
+        	os.flush();
+        	//sendSignal(device.id, buff);
+        	/////////////////////////////
+        	
+        	DeviceHandler connection = new DeviceHandler(device);
+            (new Thread(connection)).start();
+            deviceList.add(device);
+            System.out.println("[" + device.sensorID + "-" + device.groupID + "-" + device.deviceID + "] device registered..." );
+            
+          //TODO : registerDeviceResponse();
+        }
+    }
     
+    public void requestRegister(UnregisteredDevice unregisteredDevice) throws IOException {
+    	Socket socket = unregisteredDevice.getConnectionSocket();
+    	Device device = new Device(unregisteredDevice.getSensorID(), unregisteredDevice.getGroupID(), 
+    							   unregisteredDevice.getDeviceID(), unregisteredDevice.getMac(), socket);
+    	
+    	addDevice(device, socket);
+    }
     
-  //Device list 표시
+    //Device list 표시
     private static String listDevices(String line) {
         String response = "";
 
@@ -220,8 +217,6 @@ public class ArduinoCommunicationServer {
         }
         return defaultPort;
     }
-    
-    
     
     public static void sendSignal(int id, byte[] messages) {
         for (Device device : deviceList) {

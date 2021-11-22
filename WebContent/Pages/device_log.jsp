@@ -7,8 +7,12 @@
 <%@ page import="project.ids.ArduinoCommunicationServer"%>
 <%request.setCharacterEncoding("utf-8"); %>
 <%
-	DatabaseConnection dbConnection = DatabaseConnection.getInstance();
-	int deviceID = Integer.parseInt(request.getParameter("deviceID"));
+	DatabaseConnection dbConnection = new DatabaseConnection();
+	String id = request.getParameter("deviceID");
+	// ex) 1101
+	int sensorID = id.charAt(0) - '0';
+	int groupID = (int)id.charAt(1) - '0';
+	int deviceID = Integer.parseInt(String.format("%d%d", id.charAt(2)-'0', id.charAt(3)-'0'));
 %>
 <!DOCTYPE html>
 <html>
@@ -39,22 +43,22 @@
 			<td width="200">측정값</td>
 		</tr>
 		<%
-		ArrayList<LogTableDTO> deviceLogList = dbConnection.selectDeviceLogList(deviceID);
+		ArrayList<LogTableDTO> deviceLogList = dbConnection.selectDeviceLogList(sensorID, groupID, deviceID);
 		for(int i=0; i<deviceLogList.size(); i++) {
 			Timestamp time = deviceLogList.get(i).getMeasurementTime();
-			String position = deviceLogList.get(i).getPosition();
+			String location = deviceLogList.get(i).getLocation();
 			String state = deviceLogList.get(i).getAction();
 			int sensorData = deviceLogList.get(i).getSensorData();
 		%>
 			<tr>
 			<%if(state.equals("열림")) {%>
 				<td width="350" style="color: red"><%=time %></td>
-				<td width="350" style="color: red"><%=position %></td>
+				<td width="350" style="color: red"><%=location %></td>
 				<td width="200" style="color: red"><%=state %></td>
 				<td width="200" style="color: red"><%=sensorData %></td>
 			<%} else if(state.equals("닫힘")) {%>
 				<td width="350"><%=time %></td>
-				<td width="350"><%=position %></td>
+				<td width="350"><%=location %></td>
 				<td width="200"><%=state %></td>
 				<td width="200"><%=sensorData %></td>
 			<%} %>

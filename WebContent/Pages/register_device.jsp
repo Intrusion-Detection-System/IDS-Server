@@ -43,7 +43,7 @@ String mac = request.getParameter("mac");
 			<td width="200"><%=groupID%></td>
 			<td width="200"><%=location %></td>
 			<td width="50">
-				<form action="request_register.jsp" method="post">
+				<form action="request_register.jsp" method="post" >
 					<input type="text" value="<%=sensorID%>" name="sensorID" style="display: none;" readonly>
 					<input type="text" value="<%=groupID%>" name="groupID" style="display: none;" readonly>
 					<input type="text" value="<%=mac%>" name="mac" style="display: none;" readonly>
