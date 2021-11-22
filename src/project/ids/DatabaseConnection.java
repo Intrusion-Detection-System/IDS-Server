@@ -145,7 +145,7 @@ public class DatabaseConnection {
 	}
 	
 	// 부분 로그 조회
-	public ArrayList<LogTableDTO> selectDeviceLogList(int deviceID) throws SQLException {
+	public ArrayList<LogTableDTO> selectDeviceLogList(int sensorID, int groupID, int deviceID) throws SQLException {
 		//connection = DriverManager.getConnection(jdbcDriver);
 		//Connection connection = getConnection();
 		connection = DriverManager.getConnection(jdbcUrl, dbId, dbPass);
@@ -154,14 +154,18 @@ public class DatabaseConnection {
 		String query = 
 				"SELECT status.time, devices.location, status.action, status.sensor_data " +
 				"FROM devices, status " +
-				"WHERE devices.sensor_id = status.sensor_id " +
-				"AND devices.group_id = status.group_id " +
-				"AND devices.device_id = status.device_id " +
+				"WHERE (devices.sensor_id = ? AND status.sensor_id = ?) " +
+				"AND (devices.group_id = ? AND status.group_id = ?) " +
+				"AND (devices.device_id = ? AND status.device_id = ?) " +
 				"ORDER BY status.time asc";
 		
 		PreparedStatement pstmt = connection.prepareStatement(query);
-		pstmt.setInt(1, deviceID);
-		pstmt.setInt(2, deviceID);
+		pstmt.setInt(1, sensorID);
+		pstmt.setInt(2, sensorID);
+		pstmt.setInt(3, groupID);
+		pstmt.setInt(4, groupID);
+		pstmt.setInt(5, deviceID);
+		pstmt.setInt(6, deviceID);
 		ResultSet resultSet = pstmt.executeQuery();
 		
 		while(resultSet.next()) {
@@ -207,7 +211,7 @@ public class DatabaseConnection {
 	
 	// 디바이스 제거 (완전 삭제) 
 	// TODO 수정 필요
-	public void removeDevice(int deviceID) throws SQLException { // 지우고자하는 디바이스ID
+	public void deleteDevice(int deviceID) throws SQLException { // 지우고자하는 디바이스ID
 		//connection = DriverManager.getConnection(jdbcDriver);
 		//Connection connection = getConnection();
 		/* ThreadController에서 제거
@@ -309,6 +313,35 @@ public class DatabaseConnection {
 		if(connection != null) connection.close();
 		
 		return unregisteredDeviceList;
+	}
+	
+	// 등록된 디바이스 제거
+	public void deleteRegisteredDevice(String mac) throws SQLException {
+		connection = DriverManager.getConnection(jdbcUrl, dbId, dbPass);
+		String query = "DELETE FROM unregistered_devices WHERE mac_addr=?";
+		
+		PreparedStatement pstmt = connection.prepareStatement(query);
+		pstmt.setString(1, mac);
+		pstmt.executeUpdate();
+		
+		if(pstmt != null) pstmt.close();
+		if(connection != null) connection.close();
+	}
+	
+	// locations 테이블 삽입 메소드
+	public void insertLocations(int groupID, String location) throws SQLException {
+		//connection = DriverManager.getConnection(jdbcDriver);
+		//Connection connection = getConnection();
+		connection = DriverManager.getConnection(jdbcUrl, dbId, dbPass);
+		String query = "INSERT INTO locations VALUES(?, ?)";
+		
+		PreparedStatement pstmt = connection.prepareStatement(query);
+		pstmt.setInt(1, groupID);
+		pstmt.setString(2, location);
+		pstmt.executeUpdate();
+		
+		if(pstmt != null) pstmt.close();
+		if(connection != null) connection.close();
 	}
 	
 	/* 디바이스 위치 업데이트

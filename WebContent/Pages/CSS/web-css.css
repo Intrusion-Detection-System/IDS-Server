@@ -12,11 +12,11 @@ html, body {
 	border-bottom: 2px solid #d8d8d8;
 }
 
-#unregisteredDevice {
+#unregisteredDeviceTable {
 	text-align: center;
 	line-height: 2.5em;
 	border-collapse: collapse;
-	width: 70%;
+	width: 30%;
 	margin: auto;
 	border-bottom: 2px solid #d8d8d8;
 }

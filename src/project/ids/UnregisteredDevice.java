@@ -1,8 +1,22 @@
 package project.ids;
 
+import java.net.Socket;
+
 public class UnregisteredDevice {
 	private byte sensorID;
+	private byte groupID;
+	private byte deviceID;
 	private String mac;
+	private Socket connectionSocket;
+	
+	public UnregisteredDevice() {
+		
+	}
+	
+	public UnregisteredDevice(String mac, Socket connectionSocket) {
+		this.mac = mac;
+		this.connectionSocket = connectionSocket;
+	}
 	
 	public byte getSensorID() {
 		return sensorID;
@@ -16,5 +30,22 @@ public class UnregisteredDevice {
 	public void setMac(String mac) {
 		this.mac = mac;
 	}
-
+	public byte getGroupID() {
+		return groupID;
+	}
+	public void setGroupID(byte groupID) {
+		this.groupID = groupID;
+	}
+	public byte getDeviceID() {
+		return deviceID;
+	}
+	public void setDeviceID(byte deviceID) {
+		this.deviceID = deviceID;
+	}
+	public Socket getConnectionSocket() {
+		return connectionSocket;
+	}
+	public void setConnectionSocket(Socket connectionSocket) {
+		this.connectionSocket = connectionSocket;
+	}
 }
