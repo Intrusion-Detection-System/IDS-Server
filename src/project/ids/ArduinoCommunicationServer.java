@@ -167,6 +167,7 @@ public class ArduinoCommunicationServer {
         }
     }
     
+    // request_register.jsp 에서 호출
     public void requestRegister(UnregisteredDevice unregisteredDevice) throws IOException {
     	Socket socket = unregisteredDevice.getConnectionSocket();
     	Device device = new Device(unregisteredDevice.getSensorID(), unregisteredDevice.getGroupID(), 
@@ -218,53 +219,95 @@ public class ArduinoCommunicationServer {
         return defaultPort;
     }
     
-    public static void sendSignal(int id, byte[] messages) {
-        for (Device device : deviceList) {
-        	if (device.id == id) {
-	            try {
-	                DataOutputStream sendToClient = new DataOutputStream(device.socket.getOutputStream());
-	                //sendToClient.writeBytes();
-	                sendToClient.write(messages);
-	            } catch (IOException e) {
-	
-	            }
-        	}
-        }
+    public static void deleteDevice(byte sensorID, byte groupID, short deviceID)
+    {
+    	for (Device device : deviceList) {
+    		if (device.sensorID == sensorID && device.groupID == groupID && device.deviceID == deviceID) {
+    			//TODO : DB 단말기 정보 삭제
+    			
+    			ByteBuffer data = null;
+    			data = ByteBuffer.allocate(1024);
+    			data.order(ByteOrder.LITTLE_ENDIAN);
+    			
+    			data.put(device.sensorID);
+    			data.put(device.groupID);	
+    			data.putShort(device.deviceID);	
+            	
+    			data.put((byte)0); 		//controlOP : Server
+    			data.put((byte)10); 	//OP : DELETE
+    			
+    			sendSignal(device, data.array());
+    			
+    			deviceList.remove(device);
+    		}
+    	}
     }
     
- // 관리자의 호출을 받아 message 전송하는 메소드
-    //TODO : opcode 4-제어, 5-밤범,6-비방범,10-삭제 
-    public static void sendSignal(int id, byte opcode) {
-        for (Device device : deviceList) {
-        	if (device.id == id) {
-	            try {
-	            	OutputStream os= device.socket.getOutputStream();
-	            	ByteBuffer sendByteBuffer = null;
-	                
-	            	sendByteBuffer = ByteBuffer.allocate(1024);
-	            	sendByteBuffer.order(ByteOrder.LITTLE_ENDIAN);
-	            	
-	            	sendByteBuffer.put(device.sensorID);
-	            	sendByteBuffer.put(device.groupID);
-	            	sendByteBuffer.putShort(device.deviceID);
-	            	
-	            	sendByteBuffer.put((byte)0); //controlOP
-	            	sendByteBuffer.put((byte)opcode);
-	            	
-	            	sendByteBuffer.put((byte)1);
-	            	sendByteBuffer.put((byte)1);
-	            	sendByteBuffer.put((byte)2);
-	            	byte temp = (byte)(255 &(byte) 0xFF);
-	            	sendByteBuffer.put(temp);
-	            	
-	            } catch (IOException e) {
-	
-	            }
-        	}
-        }
+    public static void setAutoSecureMode(byte sensorID, byte groupID, short deviceID)
+    {
+    	for (Device device : deviceList) {
+    		if (device.sensorID == sensorID && device.groupID == groupID && device.deviceID == deviceID) {
+    			//TODO : DB 단말기 정보 변경
+    			
+    			device.auto = true;
+    			
+    			ByteBuffer data = null;
+    			data = ByteBuffer.allocate(1024);
+    			data.order(ByteOrder.LITTLE_ENDIAN);
+    			
+    			data.put(device.sensorID);
+    			data.put(device.groupID);	
+    			data.putShort(device.deviceID);	
+            	
+    			data.put((byte)0); 		//controlOP : Server
+    			data.put((byte)5); 	//OP : SecureMode
+    			
+    			data.put((byte)1);	//HEADER
+    			data.put((byte)1);	//LEN
+    			data.put((byte)1);	//AutoMode
+    			byte EOF = (byte)(255 &(byte) 0xFF);
+            	data.put(EOF);	
+    			
+            	sendSignal(device, data.array());
+            	
+    		}
+    	}
     }
     
-    public static void sendSignal(byte sensorID, byte groupID, short deviceID, byte opcode, byte state) {
+    public static void setNonAutoSecureMode(byte sensorID, byte groupID, short deviceID)
+    {
+    	for (Device device : deviceList) {
+    		if (device.sensorID == sensorID && device.groupID == groupID && device.deviceID == deviceID) {
+    			//TODO : DB 단말기 정보 변경
+    			
+    			device.auto = false;
+    			
+    			ByteBuffer data = null;
+    			data = ByteBuffer.allocate(1024);
+    			data.order(ByteOrder.LITTLE_ENDIAN);
+    			
+    			data.put(device.sensorID);
+    			data.put(device.groupID);	
+    			data.putShort(device.deviceID);	
+            	
+    			data.put((byte)0); 		//controlOP : Server
+    			data.put((byte)5); 	//OP : SecureMode
+    			
+    			data.put((byte)1);	//HEADER
+    			data.put((byte)1);	//LEN
+    			data.put((byte)0);	//AutoMode
+    			byte EOF = (byte)(255 &(byte) 0xFF);
+            	data.put(EOF);	
+    			
+            	sendSignal(device, data.array());
+    		}
+    	}
+    }
+    
+    // 관리자의 호출을 받아 message 전송하는 메소드
+    //TODO : opcode 4-제어, 5-밤범, 10-삭제     
+    //public static void sendSignal(byte sensorID, byte groupID, short deviceID, byte opcode, byte state) {
+    public static void sendSignal(byte sensorID, byte groupID, short deviceID, byte[] data) {
     	System.out.println("3");
         for (Device device : deviceList) {
         	System.out.println("4");
@@ -272,31 +315,46 @@ public class ArduinoCommunicationServer {
         		System.out.println("5");
 	            try {
 	            	OutputStream os= device.socket.getOutputStream();
-	            	byte buff[] = new byte[1024];
-    	        	buff[0] = device.sensorID;
-    	        	buff[1] = device.groupID; //<--Group ID
-    	        	buff[2] = 0; //<--Device ID(LOW)
-    	        	buff[3] = 0; //<--Device ID(HIGH)
+	            	
+	            	ByteBuffer sendByteBuffer = null;
 	                
-	            	buff[4]=(byte)0; //controlOP
-	            	buff[5]=opcode; //controlOP
+	            	sendByteBuffer = ByteBuffer.allocate(1024);
+	            	sendByteBuffer.order(ByteOrder.LITTLE_ENDIAN);
 	            	
-	            	buff[6]=(byte)1; //head
-	            	buff[7]=(byte)1; //length
-	            	buff[8]=state;   //data
-	            	buff[9]= (byte)(255 &(byte) 0xFF); //EOF
+	            	sendByteBuffer.put(device.sensorID);
+	            	sendByteBuffer.put(device.groupID);	
+	            	sendByteBuffer.putShort(device.deviceID);	
 	            	
-    	        	os.write(buff); //FOR TEST...
+	            	sendByteBuffer.put((byte)0); 		//controlOP
+	            	sendByteBuffer.put(data);
+	            	
+    	        	os.write(sendByteBuffer.array());
     	        	os.flush();
     	        	
 	            } catch (IOException e) {
-	
+	            	System.out.println("Can not declare OutputStream");
 	            }
         	}
         }
     }
     
-   //singleton
+    //자동 호출 메소드
+    public static void sendSignal(Device device, byte[] data) {
+    	
+    	try {
+			OutputStream os= device.socket.getOutputStream();
+			os.write(data);
+			os.flush();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+    	
+    	
+    	
+    }
+    
+    //singleton
   	private static ArduinoCommunicationServer instance = null;
   	public static ArduinoCommunicationServer getInstance() throws IOException {
   		System.out.println("Get Instance");
