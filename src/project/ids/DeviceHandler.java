@@ -229,8 +229,8 @@ public class DeviceHandler implements Runnable {
     public void recvDoorData(byte[] buff, int read, int pos)
     {
     	boolean isErrorMessage = false;
-    	final int EOF = 0xFF, DATA_STRING = 0xFE;
-    	byte state = 0;
+    	final int DATA_STRING = 0xFE;
+    	byte state = 0, isActed = 0;
     	int angle;
     	
     	while( read>=pos && isErrorMessage==false ) //DATA segment길이만큼 반복하여 DATA 추출
@@ -280,9 +280,20 @@ public class DeviceHandler implements Runnable {
     			}
     			break;
     		case 3:
-    			
+    			System.out.println("IS SECURED");
+    			if(Length == 1)
+    			{
+    				isActed = buff[pos++];
+        			System.out.println("Data : [Header:"+Header+"], [Length:"+Length+"], [Data:"+isActed+"]");
+    			}
+    			else
+    			{
+    				System.out.println("ERROR - Wrong Length");
+    				isErrorMessage=true;
+    			}
     			break;
-    			
+    		case 4:
+    			break;
     		case -127:
     			System.out.println("EOF2");
 
@@ -293,12 +304,29 @@ public class DeviceHandler implements Runnable {
     	if (isErrorMessage==false)
 		{
     		//TODO : 데이터 저장
-	    	//HEADER1 - (boolean)열림 닫힘, (int)문의 각도
+	    	//(boolean)열림 닫힘, (int)문의 각도, (boolean)자동 작동
     		
 	    	if (device.auto == true)//TODO : 메시지 자동 전송 로직
 	    	{
-	    		
-	    		ArduinoCommunicationServer.sendSignal(device.sensorID, device.groupID, device.deviceID, (byte)4, state);
+	    		ByteBuffer sendByteBuffer = null;
+                
+            	sendByteBuffer = ByteBuffer.allocate(1024);
+            	sendByteBuffer.order(ByteOrder.LITTLE_ENDIAN);
+            	
+            	sendByteBuffer.put(device.sensorID);
+            	sendByteBuffer.put(device.groupID);	
+            	sendByteBuffer.putShort(device.deviceID);	
+            	
+            	sendByteBuffer.put((byte)0);  //controlOP : Server
+            	sendByteBuffer.put((byte)4);  //OP : CONTROL Message
+            	
+            	sendByteBuffer.put((byte)1);
+            	sendByteBuffer.put((byte)4);
+            	sendByteBuffer.putInt(1);	  //TODO: ACTION TIME
+            	byte EOF = (byte)(255 &(byte) 0xFF);
+            	sendByteBuffer.put(EOF);	 
+            	
+	    		ArduinoCommunicationServer.sendSignal(device ,sendByteBuffer.array());
 	    		//TODO byte[] message= new byte[]; 
 	    		//ArduinoCommunicationServer.sendSignal(device.sensorID, device.groupID, device.deviceID, (byte)4, state, message);
 	    	}
@@ -331,7 +359,7 @@ public class DeviceHandler implements Runnable {
     		return false;
     }
     
-    
+    /*
     public void sendSignal(byte sensorID, byte groupID, short deviceID, byte opcode, byte state) {
     	System.out.println("3");
         	try {
@@ -358,4 +386,5 @@ public class DeviceHandler implements Runnable {
 
             }
     }
+    */
 }
