@@ -25,7 +25,7 @@
 	// 서버에 등록 요청
 	ArduinoCommunicationServer server = ArduinoCommunicationServer.getInstance();
 	Vector<UnregisteredDevice> unregisteredDevices = server.getUnregisteredDevices();
-	
+	/*
 	if(unregisteredDevices.size() > 0) {
 		for(int i=0; i<unregisteredDevices.size(); i++) {
 			unregisteredDevices.get(i).setSensorID(sensorID);
@@ -34,7 +34,7 @@
 			
 			server.requestRegister(unregisteredDevices.get(i));
 		}
-	}
+	}*/
 	
 	// TEST
 	if(unregisteredDevices.size() > 0) {
