@@ -20,6 +20,10 @@ public class ArduinoCommunicationServer {
     private static final byte OP_REQ = 1, OP_RESPONSE = 2;
     private static final int DATA_EOF = 0xFF;
     private static final byte DATA_REQ_MAC = 1;
+    
+    // ---TEST---
+    private static Vector<String> testList = new Vector<>();
+    // ----------
 
     public static void main(String argv[]) throws Exception {
         instance = ArduinoCommunicationServer.getInstance();
@@ -32,6 +36,10 @@ public class ArduinoCommunicationServer {
     public static void startServer() {
         int port = getPort();
         System.out.println("Connecting to port " + port);
+        // ---TEST---
+		System.out.println("testList.add() 호출");
+		testList.add("add test list");
+		// ----------
         try (ServerSocket welcomeSocket = new ServerSocket(port)) {
             boolean isRunning = true;
             while (isRunning) {
@@ -101,6 +109,7 @@ public class ArduinoCommunicationServer {
         				System.arraycopy(buff, pos, tMac, 0, 6); pos += 6;
         	        	Mac = byteToHex(tMac);
         	        	device.Mac = Mac;
+        	        	// TODO mac 주소를 통해 이미 등록된 디바이스인지 확인
         	        	
         	        	// 등록요청된 디바이스 객체 db에 저장
                         DatabaseConnection dbConnection = new DatabaseConnection();
@@ -108,7 +117,7 @@ public class ArduinoCommunicationServer {
 							dbConnection.insertRequestedDevice(sensorID, Mac);
 							unregisteredDevices.add(new UnregisteredDevice(Mac, connectionSocket)); // request_register.jsp 에서 등록 처리
 						} catch (SQLException e) {
-							// TODO Auto-generated catch block
+							// unregistered_devices 테이블에 데이터가 이미 있으면 에러
 						}
 						
         	        	break;
@@ -118,7 +127,7 @@ public class ArduinoCommunicationServer {
         		}
     		}
     	}
-    	// 이미 등록한적이 있으면
+    	// 이미 등록한적이 있으면?
     	else
     	{
     		device = new Device(connectionSocket);
@@ -372,5 +381,9 @@ public class ArduinoCommunicationServer {
 
 	public static Vector<UnregisteredDevice> getUnregisteredDevices() {
 		return unregisteredDevices;
+	}
+	
+	public static Vector<String> getTestList() {
+		return testList;
 	}
 }
