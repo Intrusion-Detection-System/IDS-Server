@@ -7,6 +7,8 @@
 <!DOCTYPE html>
 <%
 	DatabaseConnection dbConnection = new DatabaseConnection();
+	
+	//ArduinoCommunicationServer server = ArduinoCommunicationServer.getInstance(); // 일정시간마다 계속 호출 -> 오버헤드 증가
 	Vector<Device> aliveDeviceList = ArduinoCommunicationServer.getDeviceList();
 %>
 <html>
@@ -53,7 +55,7 @@
 				String state = registeredDeviceList.get(i).getAction();
 				Timestamp time = registeredDeviceList.get(i).getMeasurementTime();
 		
-				String id = String.format("%d%d%02d", sensorID, groupID, deviceID);
+				int id = Integer.parseInt(String.format("%d%02d%02d", sensorID, groupID, deviceID));
 		%>
 				<tr id="disabledDevice">
 					<td width="200"><%=id%></td> <!-- 디바이스id  -->
@@ -76,7 +78,7 @@
 						</form>
 					</td>
 					<td width="200">
-						<form action="disconnect.jsp" target="_blank" method="post">
+						<form action="disconnect_device.jsp" target="_blank" method="post">
 							<input type="text" value="<%=id%>" name="deviceID" style="display: none;" readonly>
 							<input type="submit" value="제거" disabled>
 							<input type="submit" value="초기화" disabled>
@@ -99,10 +101,10 @@
 				Timestamp time = registeredDeviceList.get(i).getMeasurementTime();
 				boolean isConnected = false;
 				
-				String id = String.format("%d%02d%02d", sensorID, groupID, deviceID);
+				int id = Integer.parseInt(String.format("%d%02d%02d", sensorID, groupID, deviceID));
 				
 				for(int j=0; j<aliveDeviceList.size(); j++) {
-					if(String.valueOf(aliveDeviceList.get(j).id).equals(id))
+					if(aliveDeviceList.get(j).id == id)
 						isConnected = true; // 연결되어있는 디바이스
 				}%>
 		
@@ -128,7 +130,7 @@
 							</form>
 						</td>	
 						<td width="200">
-							<form action="disconnect.jsp" target="_blank" method="post">
+							<form action="disconnect_device.jsp" target="_blank" method="post">
 								<input type="text" value="<%=id%>" name="deviceID" style="display: none;" readonly>
 								<input type="submit" value="제거" >
 								<input type="submit" value="초기화" disabled>
@@ -159,7 +161,7 @@
 							</form>
 						</td>
 						<td width="200">
-							<form action="disconnect.jsp" target="_blank" method="post">
+							<form action="disconnect_device.jsp" target="_blank" method="post">
 								<input type="text" value="<%=id%>" name="deviceID" style="display: none;" readonly>
 								<input type="submit" value="제거" disabled>
 								<input type="submit" value="초기화" disabled>
