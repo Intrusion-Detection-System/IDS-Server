@@ -4,6 +4,8 @@ import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import javax.sql.DataSource;
+
+import org.apache.catalina.ha.backend.Sender;
 import org.apache.commons.dbcp2.BasicDataSource;
 import java.sql.*;
 import java.util.ArrayList;
@@ -47,6 +49,7 @@ public class DatabaseConnection {
 	
 	//private Connection getConnection() throws SQLException {
 	//	return dataSource.getConnection();
+	//
 	//}
 	
 	// 등록된 디바이스 개수 조회 -> deviceID 정하는데 사용
@@ -210,26 +213,25 @@ public class DatabaseConnection {
 	}
 	
 	// 디바이스 제거 (완전 삭제) 
-	// TODO 수정 필요
-	public void deleteDevice(int deviceID) throws SQLException { // 지우고자하는 디바이스ID
+	public void deleteDevice(byte sensorID, byte groupID, byte deviceID) throws SQLException { // 지우고자하는 디바이스ID
 		//connection = DriverManager.getConnection(jdbcDriver);
 		//Connection connection = getConnection();
-		/* ThreadController에서 제거
-		ArrayList<ThreadController> tcList = IoT_Server.getTcList();
-		tcList.get(i).getTco().setTco(10);
-		tcList.remove(i);
-		*/
 		connection = DriverManager.getConnection(jdbcUrl, dbId, dbPass);
-		String statusDeleteQuery = "DELETE FROM status WHERE device_id=?";
-		String deviceDeleteQuery = "DELETE FROM devices WHERE id=?";
+		String statusDeleteQuery = "DELETE FROM status WHERE sensor_id = ? " +
+									"AND group_id = ?" + "AND device_id = ? ";
+		String deviceDeleteQuery = "DELETE FROM devices WHERE sensor_id = ? " +
+									"AND group_id = ?" + "AND device_id = ? ";
 		
 		PreparedStatement pstmt = connection.prepareStatement(statusDeleteQuery);
-		pstmt.setInt(1, deviceID);
+		pstmt.setByte(1, sensorID);
+		pstmt.setByte(2, groupID);
+		pstmt.setByte(3, deviceID);
 		pstmt.executeUpdate();
 		
-		// 오류 날수도 있음
 		pstmt = connection.prepareStatement(deviceDeleteQuery);
-		pstmt.setInt(1, deviceID);
+		pstmt.setByte(1, sensorID);
+		pstmt.setByte(2, groupID);
+		pstmt.setByte(3, deviceID);
 		pstmt.executeUpdate();
 		
 		if(pstmt != null) pstmt.close();
@@ -342,6 +344,59 @@ public class DatabaseConnection {
 		
 		if(pstmt != null) pstmt.close();
 		if(connection != null) connection.close();
+	}
+	
+	// 이미 존재하는 디바이스 확인
+	public Device checkRegisterdDevice(String mac) throws SQLException {
+		Device device = null;
+		int count = 0;
+		connection = DriverManager.getConnection(jdbcUrl, dbId, dbPass);
+		
+		String query = "SELECT * FROM devices WHERE mac_addr = ?";
+		PreparedStatement pstmt = connection.prepareStatement(query);
+		pstmt.setString(1, mac);
+		ResultSet resultSet = pstmt.executeQuery();
+		
+		if(resultSet.next()) {
+			byte sensorID = resultSet.getByte("sensor_id");
+			byte groupID = resultSet.getByte("group_id");
+			byte deviceID = resultSet.getByte("device_id");
+			String macAddress = resultSet.getString("mac_addr");
+			device = new Device(sensorID, groupID, deviceID, macAddress);
+		}
+		
+		if(resultSet != null) resultSet.close();
+		if(pstmt != null) pstmt.close();
+		if(connection != null) connection.close();
+		
+		if(device != null) return device;
+		return null;
+	}
+	
+	// 등록된 디바이스 가져오기
+	public Device getDevice(String mac) throws SQLException {
+		Device device = null;
+		connection = DriverManager.getConnection(jdbcUrl, dbId, dbPass);
+		ArrayList<UnregisteredDevice> unregisteredDeviceList = new ArrayList<>();
+		
+		String query = "SELECT * FROM devices WHERE mac_addr = ?";
+		PreparedStatement pstmt = connection.prepareStatement(query);
+		pstmt.setString(1, mac);
+		ResultSet resultSet = pstmt.executeQuery();
+		
+		if(resultSet.next()) {
+			byte sensorID = resultSet.getByte("sensor_id");
+			byte groupID = resultSet.getByte("group_id");
+			byte deviceID = resultSet.getByte("device_id");
+			String mac_addr = resultSet.getString("mac_addr");
+			device = new Device(sensorID, groupID, deviceID, mac_addr);
+		}
+		
+		if(resultSet != null) resultSet.close();
+		if(pstmt != null) pstmt.close();
+		if(connection != null) connection.close();
+		
+		return device;
 	}
 	
 	/* 디바이스 위치 업데이트

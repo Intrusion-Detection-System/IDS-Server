@@ -9,10 +9,10 @@
 <%
 	DatabaseConnection dbConnection = new DatabaseConnection();
 	String id = request.getParameter("deviceID");
-	// ex) 1101
+	// ex) 10101
 	int sensorID = id.charAt(0) - '0';
-	int groupID = (int)id.charAt(1) - '0';
-	int deviceID = Integer.parseInt(String.format("%d%d", id.charAt(2)-'0', id.charAt(3)-'0'));
+	int groupID = Integer.parseInt(String.format("%d%d", id.charAt(1)-'0', id.charAt(2)-'0'));
+	int deviceID = Integer.parseInt(String.format("%d%d", id.charAt(3)-'0', id.charAt(4)-'0'));
 %>
 <!DOCTYPE html>
 <html>
