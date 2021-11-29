@@ -147,7 +147,7 @@ public class DatabaseConnection {
 		return logList;
 	}
 	
-	// 부분 로그 조회
+	// 개별 로그 조회
 	public ArrayList<LogTableDTO> selectDeviceLogList(int sensorID, int groupID, int deviceID) throws SQLException {
 		//connection = DriverManager.getConnection(jdbcDriver);
 		//Connection connection = getConnection();
@@ -212,26 +212,36 @@ public class DatabaseConnection {
 		return locationList;
 	}
 	
-	// 디바이스 제거 (완전 삭제) 
-	public void deleteDevice(byte sensorID, byte groupID, byte deviceID) throws SQLException { // 지우고자하는 디바이스ID
+	// 디바이스 제거 
+	public void deleteDevice(byte sensorID, byte groupID, short deviceID) throws SQLException { // 지우고자하는 디바이스ID
 		//connection = DriverManager.getConnection(jdbcDriver);
 		//Connection connection = getConnection();
 		connection = DriverManager.getConnection(jdbcUrl, dbId, dbPass);
-		String statusDeleteQuery = "DELETE FROM status WHERE sensor_id = ? " +
-									"AND group_id = ?" + "AND device_id = ? ";
-		String deviceDeleteQuery = "DELETE FROM devices WHERE sensor_id = ? " +
-									"AND group_id = ?" + "AND device_id = ? ";
+		String deviceDeleteQuery = "DELETE FROM devices WHERE sensor_id=? " +
+									"AND group_id=? " + "AND device_id=? ";
+		
+		PreparedStatement pstmt = connection.prepareStatement(deviceDeleteQuery);
+		pstmt.setByte(1, sensorID);
+		pstmt.setByte(2, groupID);
+		pstmt.setShort(3, deviceID);
+		pstmt.executeUpdate();
+		
+		if(pstmt != null) pstmt.close();
+		if(connection != null) connection.close();
+	}
+	
+	// 상태정보 제거
+	public void deleteStatus(byte sensorID, byte groupID, short deviceID) throws SQLException { // 지우고자하는 디바이스ID
+		//connection = DriverManager.getConnection(jdbcDriver);
+		//Connection connection = getConnection();
+		connection = DriverManager.getConnection(jdbcUrl, dbId, dbPass);
+		String statusDeleteQuery = "DELETE FROM status WHERE sensor_id=? " +
+									"AND group_id=? " + "AND device_id=? ";
 		
 		PreparedStatement pstmt = connection.prepareStatement(statusDeleteQuery);
 		pstmt.setByte(1, sensorID);
 		pstmt.setByte(2, groupID);
-		pstmt.setByte(3, deviceID);
-		pstmt.executeUpdate();
-		
-		pstmt = connection.prepareStatement(deviceDeleteQuery);
-		pstmt.setByte(1, sensorID);
-		pstmt.setByte(2, groupID);
-		pstmt.setByte(3, deviceID);
+		pstmt.setShort(3, deviceID);
 		pstmt.executeUpdate();
 		
 		if(pstmt != null) pstmt.close();
