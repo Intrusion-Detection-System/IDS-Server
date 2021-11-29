@@ -6,6 +6,7 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Vector;
 import java.util.concurrent.Executors;
@@ -37,7 +38,7 @@ public class ArduinoCommunicationServer {
 	public static void startServer() {
 		int port = getPort();
 		System.out.println("Connecting to port " + port);
-
+		
 		try (ServerSocket welcomeSocket = new ServerSocket(port)) {
 
 			boolean isRunning = true;
@@ -248,11 +249,20 @@ public class ArduinoCommunicationServer {
 		return defaultPort;
 	}
 
-	public static void deleteDevice(byte sensorID, byte groupID, short deviceID) {
-		for (Device device : deviceList) {
-			if (device.sensorID == sensorID && device.groupID == groupID && device.deviceID == deviceID) {
+	public static void deleteDevice(int id) {
+		System.out.println("delete device");
+		Iterator<Device> iterator = deviceList.iterator();
+		while(iterator.hasNext()) {
+			Device device = iterator.next();
+			if (device.id == id) {
 				// DB 단말기 정보 삭제
-				deleteDevice(sensorID, groupID, deviceID);
+				DatabaseConnection dbConnection = new DatabaseConnection();
+				try {
+					dbConnection.deleteStatus(device.sensorID, device.groupID, device.deviceID);
+					dbConnection.deleteDevice(device.sensorID, device.groupID, device.deviceID);
+				} catch (SQLException e) {
+					e.printStackTrace();
+				}
 				
 				ByteBuffer data = null;
 				data = ByteBuffer.allocate(1024);
@@ -267,7 +277,7 @@ public class ArduinoCommunicationServer {
 
 				sendSignal(device, data.array());
 
-				deviceList.remove(device);
+				iterator.remove();
 			}
 		}
 	}
