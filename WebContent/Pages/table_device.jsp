@@ -38,7 +38,7 @@
 			<td width="200">상태정보</td>
 			<td width="200">측정시간</td>
 			<td width="200">환경설정</td>
-			<td width="200">제거 및 초기화</td>
+			<td width="300">제거 및 초기화</td>
 		</tr>
 		<%	
 		ArrayList<DeviceTableDTO> registeredDeviceList = dbConnection.selectRegisteredDevice();
@@ -77,10 +77,13 @@
 							<input type="submit" value="로그확인"> 
 						</form>
 					</td>
-					<td width="200">
+					<td width="300">
 						<form action="disconnect_device.jsp" target="_blank" method="post">
 							<input type="text" value="<%=id%>" name="deviceID" style="display: none;" readonly>
 							<input type="submit" value="제거" disabled>
+						</form>
+						<form action="reset_device.jsp" target="_blank" method="post">
+							<input type="text" value="<%=id%>" name="deviceID" style="display: none;" readonly>
 							<input type="submit" value="초기화" disabled>
 						</form>
 					</td>
@@ -129,11 +132,14 @@
 								<input type="submit" value="로그확인">
 							</form>
 						</td>	
-						<td width="200">
+						<td width="300">
 							<form action="disconnect_device.jsp" target="_blank" method="post">
 								<input type="text" value="<%=id%>" name="deviceID" style="display: none;" readonly>
 								<input type="submit" value="제거" >
-								<input type="submit" value="초기화" disabled>
+							</form>
+							<form action="reset_device.jsp" target="_blank" method="post">
+								<input type="text" value="<%=id%>" name="deviceID" style="display: none;" readonly>
+								<input type="submit" value="초기화" >
 							</form>
 						</td>
 					</tr>
@@ -160,10 +166,13 @@
 								<input type="submit" value="로그확인">
 							</form>
 						</td>
-						<td width="200">
+						<td width="300">
 							<form action="disconnect_device.jsp" target="_blank" method="post">
 								<input type="text" value="<%=id%>" name="deviceID" style="display: none;" readonly>
 								<input type="submit" value="제거" disabled>
+							</form>
+							<form action="reset_device.jsp" target="_blank" method="post">
+								<input type="text" value="<%=id%>" name="deviceID" style="display: none;" readonly>
 								<input type="submit" value="초기화" disabled>
 							</form>
 						</td>	

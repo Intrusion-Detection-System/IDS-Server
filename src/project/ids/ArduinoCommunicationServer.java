@@ -1,4 +1,4 @@
-	package project.ids;
+package project.ids;
 
 import java.io.*;
 import java.net.*;
@@ -30,15 +30,13 @@ public class ArduinoCommunicationServer {
 	}
 
 	private ArduinoCommunicationServer() {
-		Executors.newSingleThreadExecutor().execute(()->
-			startServer()
-		);
+		Executors.newSingleThreadExecutor().execute(() -> startServer());
 	}
-	
+
 	public static void startServer() {
 		int port = getPort();
 		System.out.println("Connecting to port " + port);
-		
+
 		try (ServerSocket welcomeSocket = new ServerSocket(port)) {
 
 			boolean isRunning = true;
@@ -114,20 +112,20 @@ public class ArduinoCommunicationServer {
 					try {
 						// TODO 이미 등록된 디바이스인지 확인
 						Device registeredDevice = dbConnection.checkRegisterdDevice(Mac);
-						if(registeredDevice == null) { // 동록되어있지 않음
+						if (registeredDevice == null) { // 동록되어있지 않음
 							System.out.println("unregisteredDevices 데이터 삽입");
 							dbConnection.insertRequestedDevice(sensorID, Mac);
-							unregisteredDevices.add(new UnregisteredDevice(Mac, connectionSocket)); // request_register.jsp에서 등록처리
-																									
+							unregisteredDevices.add(new UnregisteredDevice(Mac, connectionSocket)); // request_register.jsp에서
+																									// 등록처리
 							return null;
 						}
-						
+
 						else { // 이미 등록된 디바이스
 							System.out.println("이미 등록된 디바이스 (addDevice 메소드 즉시 실행");
 							registeredDevice.setSocket(connectionSocket);
 							return registeredDevice;
 						}
-						
+
 					} catch (SQLException e) {
 						e.printStackTrace();
 					}
@@ -139,7 +137,7 @@ public class ArduinoCommunicationServer {
 				}
 			}
 		}
-		
+
 		return device;
 	}
 
@@ -150,10 +148,10 @@ public class ArduinoCommunicationServer {
 		System.out.println("group id: " + device.groupID);
 		System.out.println("device id: " + device.deviceID);
 		System.out.println("mac: " + device.Mac);
-		
-		// 통합 id
+
+		// 통합 id 설정
 		device.setId(device.sensorID, device.groupID, device.deviceID);
-		
+
 		// 통합 id
 		System.out.println("id: " + device.id);
 		System.out.println("socket: " + device.socket.toString());
@@ -203,7 +201,7 @@ public class ArduinoCommunicationServer {
 		Socket socket = unregisteredDevice.getConnectionSocket();
 		Device device = new Device(unregisteredDevice.getSensorID(), unregisteredDevice.getGroupID(),
 				unregisteredDevice.getDeviceID(), unregisteredDevice.getMac(), socket);
-		
+
 		addDevice(device, socket);
 	}
 
@@ -250,9 +248,8 @@ public class ArduinoCommunicationServer {
 	}
 
 	public static void deleteDevice(int id) {
-		System.out.println("delete device");
 		Iterator<Device> iterator = deviceList.iterator();
-		while(iterator.hasNext()) {
+		while (iterator.hasNext()) {
 			Device device = iterator.next();
 			if (device.id == id) {
 				// DB 단말기 정보 삭제
@@ -263,7 +260,7 @@ public class ArduinoCommunicationServer {
 				} catch (SQLException e) {
 					e.printStackTrace();
 				}
-				
+
 				ByteBuffer data = null;
 				data = ByteBuffer.allocate(1024);
 				data.order(ByteOrder.LITTLE_ENDIAN);
@@ -281,10 +278,42 @@ public class ArduinoCommunicationServer {
 			}
 		}
 	}
+	
+	public static void resetDevice(int id) {
+		Iterator<Device> iterator = deviceList.iterator();
+		while(iterator.hasNext()) {
+			Device device = iterator.next();
+			if (device.id == id) {
+				// DB 단말기 정보 삭제
+				DatabaseConnection dbConnection = new DatabaseConnection();
+				try {
+					dbConnection.deleteStatus(device.sensorID, device.groupID, device.deviceID);
+					dbConnection.deleteDevice(device.sensorID, device.groupID, device.deviceID);
+				} catch (SQLException e) {
+					e.printStackTrace();
+				}
 
-	public static void setAutoSecureMode(byte sensorID, byte groupID, short deviceID) {
+				ByteBuffer data = null;
+				data = ByteBuffer.allocate(1024);
+				data.order(ByteOrder.LITTLE_ENDIAN);
+
+				data.put(device.sensorID);
+				data.put(device.groupID);
+				data.putShort(device.deviceID);
+
+				data.put((byte) 0); // controlOP : Server
+				data.put((byte) 8); // OP : RESET
+
+				sendSignal(device, data.array());
+
+				iterator.remove();
+			}
+		}
+	}
+
+	public static void setAutoSecureMode(int id) {
 		for (Device device : deviceList) {
-			if (device.sensorID == sensorID && device.groupID == groupID && device.deviceID == deviceID) {
+			if (device.id == id) {
 				// TODO : DB 단말기 정보 변경
 
 				device.auto = true;
@@ -307,14 +336,13 @@ public class ArduinoCommunicationServer {
 				data.put(EOF);
 
 				sendSignal(device, data.array());
-
 			}
 		}
 	}
 
-	public static void setNonAutoSecureMode(byte sensorID, byte groupID, short deviceID) {
+	public static void setNonAutoSecureMode(int id) {
 		for (Device device : deviceList) {
-			if (device.sensorID == sensorID && device.groupID == groupID && device.deviceID == deviceID) {
+			if (device.id == id) {
 				// TODO : DB 단말기 정보 변경
 
 				device.auto = false;

@@ -304,6 +304,8 @@ public class DeviceHandler implements Runnable {
     	if (isErrorMessage==false)
 		{
     		//TODO : 데이터 저장
+    		DatabaseConnection dbConnection = new DatabaseConnection();
+    		// 열림 닫힘, 각도 데이터가 들어있는 변수명?
 	    	//(boolean)열림 닫힘, (int)문의 각도, (boolean)자동 작동
     		
 	    	if (device.auto == true)//TODO : 메시지 자동 전송 로직
