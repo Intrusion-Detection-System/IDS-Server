@@ -27,6 +27,7 @@
 		function getDeviceID() {
 			return deviceID
 		}
+	
 	</script>
 </head>
 
@@ -39,6 +40,7 @@
 			<td width="200">측정시간</td>
 			<td width="200">환경설정</td>
 			<td width="300">제거 및 초기화</td>
+			<td width="300">신호전송 및 모드변경</td>
 		</tr>
 		<%	
 		ArrayList<DeviceTableDTO> registeredDeviceList = dbConnection.selectRegisteredDevice();
@@ -62,10 +64,6 @@
 					<td id="location<%=id%>" width="200"><%=location%></td> <!-- 위치 -->
 					<%if (state.equals("열림")) {%>
 						<td width="200" style="color: red"><%=state%><br>
-							<form action="request_signal.jsp" target="_blank" method="post">
-								<input type="text" value=<%=id%> name="deviceID" style="display: none;" readonly>
-								<input type="submit" value="경고신호" disabled>
-							</form>
 						</td>
 					<%} else if(state.equals("닫힘")) {%>
 						<td width="200" style="color: green"><%=state%></td>
@@ -87,6 +85,15 @@
 							<input type="submit" value="초기화" disabled>
 						</form>
 					</td>
+					<td width="300">
+						<form action="request_signal.jsp" target="_blank" method="post">
+							<input type="text" value=<%=id%> name="deviceID" style="display: none;" readonly>
+							<input type="submit" value="경고신호" disabled>
+						</form>
+						<form action="change_mode.jsp" target="_blank" method="post">
+							<input type="button" id="mode" value="방범모드" disabled>
+						</form>	
+					</td> 
 				</tr>
 		<%
 			}
@@ -103,12 +110,23 @@
 				String state = registeredDeviceList.get(i).getAction();
 				Timestamp time = registeredDeviceList.get(i).getMeasurementTime();
 				boolean isConnected = false;
+				String mode = "";
+				String setMode = "";
 				
 				int id = Integer.parseInt(String.format("%d%02d%02d", sensorID, groupID, deviceID));
 				
 				for(int j=0; j<aliveDeviceList.size(); j++) {
-					if(aliveDeviceList.get(j).id == id)
+					if(aliveDeviceList.get(j).id == id) {
 						isConnected = true; // 연결되어있는 디바이스
+						if(aliveDeviceList.get(j).auto == true) {
+							mode = "(방범모드)";
+							setMode = "비방범모드";
+						}
+						else {
+							mode = "(비방범모드)";
+							setMode = "방범모드";
+						}
+					}
 				}%>
 		
 				<%if(isConnected) {%> 
@@ -117,13 +135,12 @@
 						<td id="location<%=id%>"width="200"><%=location%></td>
 						<% if (state.equals("열림")) {%>
 							<td width="200" style="color: red"><%=state%><br>
-								<form action="request_signal.jsp" target="_blank" method="post">
-									<input type="text" value=<%=id%> name="deviceID" style="display: none;" readonly>
-									<input type="submit" value="경고신호">	
-								</form>
+							<p style='color: #000000; font-size: 14px;'><%=mode %></p>
 							</td>
 						<%} else if (state.equals("닫힘")) {%>
-							<td width="200" style="color: green"><%=state%></td>
+							<td width="200" style="color: green"><%=state%>
+							<p style='color: #000000; font-size: 14px;'><%=mode %></p>
+							</td>
 						<%} %>
 						<td width="200"><%=time%></td>
 						<td width="200">
@@ -142,6 +159,16 @@
 								<input type="submit" value="초기화" >
 							</form>
 						</td>
+						<td width="300">
+							<form action="request_signal.jsp" target="_blank" method="post">
+								<input type="text" value=<%=id%> name="deviceID" style="display: none;" readonly>
+								<input type="submit" value="경고신호">
+							</form>
+							<form action="change_mode.jsp" target="_blank" method="post">
+								<input type="text" value=<%=id%> name="deviceID" style="display: none;" readonly>
+								<button type="submit" id=<%=id%> name="mode" value=<%=setMode%>><%=setMode%></button>
+							</form>	
+						</td> 
 					</tr>
 				<%}
 				
@@ -175,7 +202,16 @@
 								<input type="text" value="<%=id%>" name="deviceID" style="display: none;" readonly>
 								<input type="submit" value="초기화" disabled>
 							</form>
-						</td>	
+						</td>
+						<td width="300">
+							<form action="request_signal.jsp" target="_blank" method="post">
+								<input type="text" value=<%=id%> name="deviceID" style="display: none;" readonly>
+								<input type="submit" value="경고신호" disabled>
+							</form>
+							<form action="change_mode.jsp" target="_blank" method="post">
+								<input type="button" id="mode" value="방범모드" disabled>
+							</form>	
+						</td> 
 					</tr>
 			<%}
 			}
