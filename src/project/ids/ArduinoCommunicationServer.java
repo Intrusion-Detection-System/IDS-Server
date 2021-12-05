@@ -162,23 +162,25 @@ public class ArduinoCommunicationServer {
 			// TODO : Error Message
 		} else // REQ가 올바르다.
 		{
+			
+			ByteBuffer data = null;
+			data = ByteBuffer.allocate(1024);
+			data.order(ByteOrder.LITTLE_ENDIAN);
 
+			data.put(device.sensorID);
+			data.put(device.groupID);
+			data.putShort(device.deviceID);
+
+			data.put((byte) 0); // controlOP : Server
+			data.put((byte) 2); // OP : ANSWER
+			data.put((byte) 1); //HEAD : DeviceID
+			data.put((byte) 2); //LEN : 2
+			data.putShort(device.deviceID); //ID
+			data.put((byte) 0xFF); //EOF
 			// TODO : registerDeviceResponse();
-			byte buff[] = new byte[1024];
-			buff[0] = device.sensorID;
-			buff[1] = device.groupID; // <--Group ID
-			buff[2] = 0; // <--Device ID(LOW)
-			buff[3] = 0; // <--Device ID(HIGH)
-			buff[4] = 0; // server
-			buff[5] = 2; // ANSWER
-			buff[6] = 1; // HEAD[Group ID]
-			buff[7] = 1; // <--Group ID
-			buff[8] = 2; // HEAD[DeviceID]
-			buff[9] = 2; // <--Device ID(HIGH)
-			buff[10] = 3;// <--Device ID(LOW)
-			buff[11] = (byte) 0xFF;
+			
 			OutputStream os = device.socket.getOutputStream();
-			os.write(buff); // FOR TEST...
+			os.write(data.array()); // FOR TEST...
 			os.flush();
 			// sendSignal(device.id, buff);
 			/////////////////////////////
