@@ -269,14 +269,14 @@ public class DatabaseConnection {
 	}
 	
 	// 로그 저장
-	public void insertLogTable(byte sensorID, byte groupID, byte deviceID, String action, int sensorData) throws SQLException {
+	public void insertLogTable(byte sensorID, byte groupID, short deviceID, String action, int sensorData) throws SQLException {
 		connection = DriverManager.getConnection(jdbcUrl, dbId, dbPass);
 		String query = "INSERT INTO status(sensor_id, group_id, device_id, action, sensor_data, time) VALUES(?, ?, ?, ?, ?, ?)";
 		
 		PreparedStatement pstmt = connection.prepareStatement(query);
 		pstmt.setByte(1, sensorID);
 		pstmt.setByte(2, groupID);
-		pstmt.setByte(3, deviceID);
+		pstmt.setShort(3, deviceID);
 		pstmt.setString(4, action);
 		pstmt.setInt(5, sensorData);
 		pstmt.setTimestamp(6, new Timestamp(System.currentTimeMillis()));

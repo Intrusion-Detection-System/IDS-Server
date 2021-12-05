@@ -1,9 +1,11 @@
+
 package project.ids;
 
 import java.io.*;
 import java.net.Socket;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.sql.SQLException;
 
 public class DeviceHandler implements Runnable {
 	private Device device;
@@ -11,6 +13,10 @@ public class DeviceHandler implements Runnable {
 
 	public DeviceHandler(Device device) {
 		this.device = device;
+		System.out.println("sensor id " + device.sensorID);
+		System.out.println("group id " + device.groupID);
+		System.out.println("device id " + device.deviceID);
+		System.out.println(isRightDevice(device.sensorID, device.groupID, device.deviceID));
 	}
 
 	@Override
@@ -110,89 +116,13 @@ public class DeviceHandler implements Runnable {
 				System.out.println("Error - ControlOP is not Device");
 				System.out.println("[" + sensorID + "-" + groupID + "-" + deviceID + "-" + controlOP + "-" + OP + "]");
 			} else {
-				System.out.println("Error - ID Segment Error");
+				System.out.println("Error - ID Segment Error2");
 			}
 
 		}
 	}
 
-	private void readMessage(BufferedInputStream bis) {
-		int read = 0, pos = 0;
-		byte[] buff = new byte[1024];
-		byte[] tDeviceID = new byte[2];
-
-		byte sensorID, groupID, controlOP, OP;
-		short deviceID;
-
-		try {
-			read = bis.read(buff, 0, 1024);
-		} catch (IOException e) {
-			System.out.println("Socket.read ERROR");
-		}
-
-		/* ID */
-		sensorID = buff[pos++];
-		groupID = buff[pos++];
-
-		System.arraycopy(buff, pos, tDeviceID, 0, 2);
-		pos += 2;
-		deviceID = ByteBuffer.wrap(tDeviceID).order(ByteOrder.LITTLE_ENDIAN).getShort();
-
-		/* OP */
-		controlOP = buff[pos++];
-		OP = buff[pos++];
-
-		/* DATA */
-		if ((int) (controlOP & 0xFF) == 0xFF && isRightDevice(sensorID, groupID, deviceID)) {
-			switch (OP) {
-			case 0:
-				break;
-
-			case 1: // OP_REQ
-				System.out.println("DEV_REQ");
-				break;
-
-			case 2: // OP_RESPONSE
-				System.out.println("DEV_ANSWER");
-				break;
-
-			case 3: // OP_DATA
-				System.out.println("DATA");
-				recvData(buff, read, pos);
-				// ArduinoCommunicationServer.sendSignal(sensorID, "hi");
-				break;
-			case 4: // OP_CONTROL
-				System.out.println("CONTROL");
-				break;
-
-			case 5: // OP_MODE_CHANGE
-				System.out.println("MODE CHANGE");
-				break;
-
-			case 9:
-				break;
-
-			case 10: // OP_RESET
-				System.out.println("RESET");
-
-				resetDevice();
-				break;
-
-			case 11: // OP_ERROR
-				System.out.println("ERROR");
-				break;
-
-			default:
-				System.out.println("예외처리");
-			}
-		} else if (!((int) (controlOP & 0xFF) == 0xFF)) {
-			System.out.println("Error - ControlOP is not Device..." + controlOP);
-
-		} else {
-			System.out.println("Error - ID Segment Error");
-		}
-
-	}
+	
 
 	private void recvData(byte[] buff, int read, int pos) // Data, DataLength, pos
 	{
@@ -216,10 +146,15 @@ public class DeviceHandler implements Runnable {
 		boolean isErrorMessage = false;
 		final int DATA_STRING = 0xFE;
 		byte state = 0, isActed = 0;
-		int angle;
+		int angle = 0;
 
 		while (read >= pos && isErrorMessage == false) // DATA segment길이만큼 반복하여 DATA 추출
 		{
+			System.out.println("M=" + read + " " + pos);
+			for (int i = pos; i < read; i++) {
+				System.out.print(buff[i]);
+				System.out.print(" ");
+			}
 			byte Header, Length;
 
 			Header = buff[pos++];
@@ -277,6 +212,17 @@ public class DeviceHandler implements Runnable {
 		}
 		if (isErrorMessage == false) {
 			// TODO : 데이터 저장 - (boolean)state, (int)angle
+			DatabaseConnection dbConnection = new DatabaseConnection();
+			try {
+				if (state == 1) {
+					dbConnection.insertLogTable(device.sensorID, device.groupID, device.deviceID, "열림", angle);
+				} else if (state == 0) {
+					dbConnection.insertLogTable(device.sensorID, device.groupID, device.deviceID, "닫힘", angle);
+				}
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+
 			// device.auto, device.actionTime
 
 			if (device.auto == true && state == 1)// TODO : 메시지 자동 전송 로직 (auto, opened)
@@ -288,7 +234,6 @@ public class DeviceHandler implements Runnable {
 				sendByteBuffer.put(device.sensorID);
 			}
 		}
-
 	}
 
 	public void recvTempData() // sensorID(2) EXAMPLE...
