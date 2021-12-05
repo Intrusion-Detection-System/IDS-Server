@@ -9,8 +9,9 @@ public class Device {
     public byte sensorID, groupID, controlOP, OP;
 	public short deviceID;
 	public String Mac= "";
+	public int actionTime = 1;
 	
-	boolean auto = true;
+	public boolean auto = true;
     
 	//tmp
     public Device( Socket socket) {

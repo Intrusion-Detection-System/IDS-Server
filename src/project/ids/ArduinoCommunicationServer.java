@@ -278,10 +278,10 @@ public class ArduinoCommunicationServer {
 			}
 		}
 	}
-	
+
 	public static void resetDevice(int id) {
 		Iterator<Device> iterator = deviceList.iterator();
-		while(iterator.hasNext()) {
+		while (iterator.hasNext()) {
 			Device device = iterator.next();
 			if (device.id == id) {
 				// DB 단말기 정보 삭제
@@ -315,7 +315,7 @@ public class ArduinoCommunicationServer {
 		for (Device device : deviceList) {
 			if (device.id == id) {
 				// TODO : DB 단말기 정보 변경
-
+				System.out.println("방범모드로 변경");
 				device.auto = true;
 
 				ByteBuffer data = null;
@@ -344,7 +344,7 @@ public class ArduinoCommunicationServer {
 		for (Device device : deviceList) {
 			if (device.id == id) {
 				// TODO : DB 단말기 정보 변경
-
+				System.out.println("비방범모드로 변경");
 				device.auto = false;
 
 				ByteBuffer data = null;
@@ -367,6 +367,16 @@ public class ArduinoCommunicationServer {
 				sendSignal(device, data.array());
 			}
 		}
+	}
+	
+	public boolean getMode(int id) {
+		boolean auto = false;
+		for(Device device : deviceList) {
+			if(device.id == id) {
+				auto = device.auto;
+			}
+		}
+		return auto;
 	}
 
 	// 관리자의 호출을 받아 message 전송하는 메소드
@@ -400,6 +410,14 @@ public class ArduinoCommunicationServer {
 				} catch (IOException e) {
 					System.out.println("Can not declare OutputStream");
 				}
+			}
+		}
+	}
+
+	public static void changeActionTime(byte sensorID, byte groupID, short deviceID, int actionTime) {
+		for (Device device : deviceList) {
+			if (device.sensorID == sensorID && device.groupID == groupID && device.deviceID == deviceID) {
+				device.actionTime = actionTime;
 			}
 		}
 	}
