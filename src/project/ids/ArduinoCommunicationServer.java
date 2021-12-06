@@ -385,11 +385,11 @@ public class ArduinoCommunicationServer {
 	// TODO : opcode 4-제어, 5-밤범, 10-삭제
 	// public static void sendSignal(byte sensorID, byte groupID, short deviceID,
 	// byte opcode, byte state) {
-	public static void sendSignal(byte sensorID, byte groupID, short deviceID, byte[] data) {
+	public static void sendSignal(int id, byte[] data) {
 		System.out.println("3");
 		for (Device device : deviceList) {
 			System.out.println("4");
-			if (device.sensorID == sensorID && device.groupID == groupID && device.deviceID == deviceID) {
+			if (device.id == id) {
 				System.out.println("5");
 				try {
 					OutputStream os = device.socket.getOutputStream();
