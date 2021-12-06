@@ -15,20 +15,6 @@
 <head>
 	<meta charset="UTF-8">
 	<link rel="stylesheet" type="text/css" href="CSS/web-css.css"/>
-	<script type="text/javascript" src="JQuery/jquery-3.5.1.min.js"></script>
-	<script type="text/javascript">
-		var deviceID
-		
-		function revise(id) {
-			window.open('revise.jsp', '수정', 'width=800px, height=400px')
-			deviceID = id
-		}
-		
-		function getDeviceID() {
-			return deviceID
-		}
-	
-	</script>
 </head>
 
 <body>
@@ -76,21 +62,18 @@
 						</form>
 					</td>
 					<td width="300">
-						<form action="disconnect_device.jsp" target="_blank" method="post">
-							<input type="text" value="<%=id%>" name="deviceID" style="display: none;" readonly>
+						<form action="" target="_blank" method="post">
 							<input type="submit" value="제거" disabled>
 						</form>
-						<form action="reset_device.jsp" target="_blank" method="post">
-							<input type="text" value="<%=id%>" name="deviceID" style="display: none;" readonly>
+						<form action="" target="_blank" method="post">
 							<input type="submit" value="초기화" disabled>
 						</form>
 					</td>
 					<td width="300">
-						<form action="request_signal.jsp" target="_blank" method="post">
-							<input type="text" value=<%=id%> name="deviceID" style="display: none;" readonly>
+						<form action="" target="_blank" method="post">
 							<input type="submit" value="경고신호" disabled>
 						</form>
-						<form action="change_mode.jsp" target="_blank" method="post">
+						<form action="" target="_blank" method="post">
 							<input type="button" id="mode" value="방범모드" disabled>
 						</form>	
 					</td> 
@@ -177,12 +160,7 @@
 						<td width="200"><%=id%></td>
 						<td id="location<%=id%>"width="200"><%=location%></td>
 						<% if (state.equals("열림")) {%>
-							<td width="200" style="color: red"><%=state%><br>
-								<form action="request_signal.jsp" target="_blank" method="post">
-									<input type="text" value=<%=id%> name="deviceID" style="display: none;" readonly>
-									<input type="submit" value="경고신호" disabled>	
-								</form>
-							</td>
+							<td width="200" style="color: red"><%=state%><br></td>
 						<%} if (state.equals("닫힘")) {%>
 							<td width="200" style="color: green"><%=state%></td>
 						<%} %>
@@ -194,18 +172,15 @@
 							</form>
 						</td>
 						<td width="300">
-							<form action="disconnect_device.jsp" target="_blank" method="post">
-								<input type="text" value="<%=id%>" name="deviceID" style="display: none;" readonly>
+							<form action="" target="_blank" method="post">
 								<input type="submit" value="제거" disabled>
 							</form>
-							<form action="reset_device.jsp" target="_blank" method="post">
-								<input type="text" value="<%=id%>" name="deviceID" style="display: none;" readonly>
+							<form action="" target="_blank" method="post">
 								<input type="submit" value="초기화" disabled>
 							</form>
 						</td>
 						<td width="300">
-							<form action="request_signal.jsp" target="_blank" method="post">
-								<input type="text" value=<%=id%> name="deviceID" style="display: none;" readonly>
+							<form action="" target="_blank" method="post">
 								<input type="submit" value="경고신호" disabled>
 							</form>
 							<form action="change_mode.jsp" target="_blank" method="post">
