@@ -249,7 +249,7 @@ public class DatabaseConnection {
 	}
 	
 	// 디바이스 추가
-	public void insertDevice(byte sensorID, byte groupID, byte deviceID, String mac, String location) throws SQLException {
+	public void insertDevice(byte sensorID, byte groupID, short deviceID, String mac, String location) throws SQLException {
 		//connection = DriverManager.getConnection(jdbcDriver);
 		//Connection connection = getConnection();
 		connection = DriverManager.getConnection(jdbcUrl, dbId, dbPass);
@@ -258,7 +258,7 @@ public class DatabaseConnection {
 		PreparedStatement pstmt = connection.prepareStatement(query);
 		pstmt.setByte(1, sensorID);
 		pstmt.setByte(2, groupID);
-		pstmt.setByte(3, deviceID);
+		pstmt.setShort(3, deviceID);
 		pstmt.setString(4, mac);
 		pstmt.setString(5, location);
 		pstmt.setTimestamp(6, new Timestamp(System.currentTimeMillis()));

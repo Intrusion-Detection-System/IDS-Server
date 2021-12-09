@@ -2,7 +2,10 @@
     pageEncoding="UTF-8"%>
     
 <%@ page import="project.ids.DatabaseConnection" %>
-<%
+<%	
+	/* locations 테이블 데이터 삽입 전용 */
+	
+	
 	DatabaseConnection dbConnection = new DatabaseConnection();
 	/*
 	dbConnection.insertLocations(1, "공학관 101호");

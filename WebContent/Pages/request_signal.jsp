@@ -4,7 +4,7 @@
 <%
 	request.setCharacterEncoding("utf-8");
 	int id = Integer.parseInt(request.getParameter("deviceID"));
-	ArduinoCommunicationServer.sendSignal(id, data); // TODO data?
+	ArduinoCommunicationServer.sendSignal(id);
 %>
 <!DOCTYPE html>
 <html>
