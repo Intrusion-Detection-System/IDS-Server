@@ -66,4 +66,26 @@ Arduino Nano 33 IoT
 
 #
 
+### 사용 기술
+
+```
+Arduino
+  WiFiNINA
+  IMU(acceleration/gyroscope)
+
+Java 
+ Web sockect, socket communication
+ JDBC / Connection pool
+ Servlet
+
+Web
+ HTML, CSS, Java script
+ JQuery
+ AJAX
+ JSP
+ 
+```
+
+#
+
 ### 경성대학교 산학협력단 지원
