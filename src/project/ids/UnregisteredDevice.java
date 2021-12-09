@@ -5,7 +5,7 @@ import java.net.Socket;
 public class UnregisteredDevice {
 	private byte sensorID;
 	private byte groupID;
-	private byte deviceID;
+	private short deviceID;
 	private String mac;
 	private Socket connectionSocket;
 	
@@ -36,10 +36,11 @@ public class UnregisteredDevice {
 	public void setGroupID(byte groupID) {
 		this.groupID = groupID;
 	}
-	public byte getDeviceID() {
+	public short getDeviceID() {
 		return deviceID;
 	}
-	public void setDeviceID(byte deviceID) {
+
+	public void setDeviceID(short deviceID) {
 		this.deviceID = deviceID;
 	}
 	public Socket getConnectionSocket() {

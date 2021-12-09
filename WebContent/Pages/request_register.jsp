@@ -14,7 +14,7 @@
 
 	// 데이터베이스에 등록(table: devices, status)
 	DatabaseConnection dbConnection = new DatabaseConnection();
-	byte deviceID = dbConnection.countDeviceID();
+	short deviceID = dbConnection.countDeviceID();
 	dbConnection.insertDevice(sensorID, groupID, deviceID, mac, location);
 	dbConnection.insertLogTable(sensorID, groupID, deviceID, "닫힘", 0);
 	
