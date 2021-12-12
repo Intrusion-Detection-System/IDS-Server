@@ -11,6 +11,9 @@ ArduinoCommunicationServer.resetDevice(id);
 <html>
 <head>
 <meta charset="UTF-8">
+<script type="text/javascript">
+	window.self.close();
+</script>
 <title>Insert title here</title>
 </head>
 <body>

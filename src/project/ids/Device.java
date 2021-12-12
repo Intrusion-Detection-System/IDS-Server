@@ -11,6 +11,7 @@ public class Device {
 	public String Mac= "";
 	public int actionTime = 1;
 	
+	public boolean isRunning = true;
 	public boolean auto = true;
     
 	//tmp
