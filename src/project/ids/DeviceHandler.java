@@ -195,8 +195,7 @@ public class DeviceHandler implements Runnable {
 				System.out.println("IS SECURED");
 				if (Length == 1) {
 					isActed = buff[pos++];
-					System.out
-							.println("Data : [Header:" + Header + "], [Length:" + Length + "], [Data:" + isActed + "]");
+					System.out.println("Data : [Header:" + Header + "], [Length:" + Length + "], [Data:" + isActed + "]");
 				} else {
 					System.out.println("ERROR - Wrong Length");
 					isErrorMessage = true;
@@ -223,8 +222,8 @@ public class DeviceHandler implements Runnable {
 				e.printStackTrace();
 			}
 
-			// device.auto, device.actionTime
-
+			//TODO : Q1_방범모드와 비방범모드 정보는 DB에 저장하지 않는가?
+			/*
 			if (device.auto == true && state == 1)// TODO : 메시지 자동 전송 로직 (auto, opened)
 			{
 				ByteBuffer sendByteBuffer = null;
@@ -233,6 +232,7 @@ public class DeviceHandler implements Runnable {
 
 				sendByteBuffer.put(device.sensorID);
 			}
+			*/
 		}
 	}
 
