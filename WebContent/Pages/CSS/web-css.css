@@ -7,7 +7,16 @@ html, body {
 	text-align: center;
 	line-height: 2.5em;
 	border-collapse: collapse;
-	width: 60%;
+	width: 80%;
+	margin: auto;
+	border-bottom: 2px solid #d8d8d8;
+}
+
+#unregisteredDeviceTable {
+	text-align: center;
+	line-height: 2.5em;
+	border-collapse: collapse;
+	width: 30%;
 	margin: auto;
 	border-bottom: 2px solid #d8d8d8;
 }
@@ -22,7 +31,7 @@ html, body {
 }
 
 #logBox {
-	width: 60%;
+	width: 70%;
 	margin: auto;
 	line-height: 2.5em;
 	text-align: center;

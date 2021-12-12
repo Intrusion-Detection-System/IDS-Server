@@ -5,7 +5,7 @@
 <%@ page import="java.util.ArrayList" %>
 <!DOCTYPE html>
 <%
-	DatabaseConnection dbConnection = DatabaseConnection.getInstance();
+	DatabaseConnection dbConnection = new DatabaseConnection();
 %>
 <html>
 <head>
@@ -24,19 +24,19 @@
 		ArrayList<LogTableDTO> logList = dbConnection.selectLogList();
 		for(int i=0; i<logList.size(); i++) {
 			Timestamp time = logList.get(i).getMeasurementTime();
-			String position = logList.get(i).getPosition();
+			String location = logList.get(i).getLocation();
 			String state = logList.get(i).getAction();
 			int sensorData = logList.get(i).getSensorData();
 		%>
 			<tr>
 				<%if(state.equals("열림")) {%>
 					<td width="350" style="color: red"><%=time%></td>
-					<td width="350" style="color: red"><%=position%></td>
+					<td width="350" style="color: red"><%=location%></td>
 					<td width="200" style="color: red"><%=state%></td>
 					<td width="200" style="color: red"><%=sensorData%></td>
 				<%} else if(state.equals("닫힘")) {%>
 					<td width="350"><%=time%></td>
-					<td width="350"><%=position%></td>
+					<td width="350"><%=location%></td>
 					<td width="200"><%=state%></td>
 					<td width="200"><%=sensorData%></td>
 				<%} %>

@@ -4,7 +4,7 @@ import java.sql.Timestamp;
 
 public class LogTableDTO {
 	private Timestamp measurementTime;
-	private String position;
+	private String location;
 	private String action;
 	private int sensorData;
 	
@@ -13,12 +13,6 @@ public class LogTableDTO {
 	}
 	public void setMeasurementTime(Timestamp measurementTime) {
 		this.measurementTime = measurementTime;
-	}
-	public String getPosition() {
-		return position;
-	}
-	public void setPosition(String position) {
-		this.position = position;
 	}
 	public String getAction() {
 		return action;
@@ -31,5 +25,11 @@ public class LogTableDTO {
 	}
 	public void setSensorData(int sensorData) {
 		this.sensorData = sensorData;
+	}
+	public String getLocation() {
+		return location;
+	}
+	public void setLocation(String location) {
+		this.location = location;
 	}
 }

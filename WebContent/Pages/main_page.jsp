@@ -1,5 +1,9 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8"
     pageEncoding="UTF-8"%>
+<%@ page import="project.ids.ArduinoCommunicationServer" %>
+<%
+	ArduinoCommunicationServer server = ArduinoCommunicationServer.getInstance();
+%>
 <!DOCTYPE html>
 <html>
 <head>
@@ -11,12 +15,12 @@
 			// AJAX
 			$("#deviceTable").load("table_device.jsp")
 			$("#logTable").load("table_log.jsp")
+			$("#unregisteredDeviceTable").load("require_register.jsp")
 			
-			// Todo 일정 주기마다 새로고침 하지않고
-			// 데이터에 변화가 있을때 새로고침 하는방법 연구
 			function updateTables() {
 				$("#deviceTable").load("table_device.jsp")
 				$("#logTable").load("table_log.jsp")
+				$("#unregisteredDeviceTable").load("require_register.jsp")
 			}
 			setInterval(updateTables, 2000);
 		})
@@ -30,5 +34,8 @@
 	
 	<p style="font-size: 18px;">전체 로그 정보</p>
 	<div id="logTable"></div>
+	
+	<p style="font-size: 20px; margin-top: 80px">디바이스 연결요청</p>
+	<div id="unregisteredDeviceTable"></div>
 </body>
 </html>
