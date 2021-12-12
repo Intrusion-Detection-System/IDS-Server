@@ -24,6 +24,8 @@ public class ArduinoCommunicationServer {
 	private static final byte OP_REQ = 1, OP_RESPONSE = 2;
 	private static final int DATA_EOF = 0xFF;
 	private static final byte DATA_REQ_MAC = 1;
+	private static int maxCnt = 5;
+	private static int cnt = 0;
 
 	public static void main(String argv[]) throws Exception {
 		instance = ArduinoCommunicationServer.getInstance();
@@ -186,6 +188,7 @@ public class ArduinoCommunicationServer {
 			/////////////////////////////
 
 			DeviceHandler connection = new DeviceHandler(device);
+			device.socket.setSoTimeout(10000);
 			(new Thread(connection)).start();
 			// Test-----
 			deviceList.add(device);
@@ -273,10 +276,12 @@ public class ArduinoCommunicationServer {
 
 				data.put((byte) 0); // controlOP : Server
 				data.put((byte) 10); // OP : DELETE
-
+				data.put((byte) 0xFF);
 				sendSignal(device, data.array());
-
+				
 				iterator.remove();
+				device.isRunning=false;
+				device = null;
 			}
 		}
 	}
@@ -305,11 +310,14 @@ public class ArduinoCommunicationServer {
 
 				data.put((byte) 0); // controlOP : Server
 				data.put((byte) 8); // OP : RESET
-				// ! Error - ID Segment Error2 발생 //
-
+				data.put((byte) 0xFF);
+			
+				
 				sendSignal(device, data.array());
 
 				iterator.remove();
+				device.isRunning = false;
+				device = null;
 			}
 		}
 	}
@@ -460,13 +468,47 @@ public class ArduinoCommunicationServer {
 		}
 	}
 
-	public static void changeActionTime(byte sensorID, byte groupID, short deviceID, int actionTime) {
+	// TODO Timer task
+	
+	public static void addCount()
+	{
+		
+		if(cnt++ > maxCnt)
+			sendAllDevice();
+	}
+	
+	public static void sendAllDevice() {
 		for (Device device : deviceList) {
-			if (device.sensorID == sensorID && device.groupID == groupID && device.deviceID == deviceID) {
-				device.actionTime = actionTime;
+			try {
+				OutputStream os = device.socket.getOutputStream();
+
+				ByteBuffer data = null;
+				data = ByteBuffer.allocate(1024);
+				data.order(ByteOrder.LITTLE_ENDIAN);
+
+				data.put(device.sensorID);
+				data.put(device.groupID);
+				data.putShort(device.deviceID);
+
+				data.put((byte) 0); // controlOP : Server
+				data.put((byte) 4); // OP : Control
+
+				data.put((byte) 1); // HEADER
+				data.put((byte) 4); // LEN
+				data.putInt(device.actionTime); // ActionTime
+				byte EOF = (byte) (255 & (byte) 0xFF);
+				data.put(EOF);
+				
+				os.write(data.array());
+				os.flush();
+
+			} catch (IOException e) {
+				System.out.println("Can not declare OutputStream");
 			}
+		
 		}
 	}
+	
 
 	// 자동 호출 메소드
 	public static void sendSignal(Device device, byte[] data) {

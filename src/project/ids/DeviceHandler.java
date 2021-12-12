@@ -9,7 +9,6 @@ import java.sql.SQLException;
 
 public class DeviceHandler implements Runnable {
 	private Device device;
-	boolean isRunning = true;
 
 	public DeviceHandler(Device device) {
 		this.device = device;
@@ -21,11 +20,13 @@ public class DeviceHandler implements Runnable {
 
 	@Override
 	public void run() {
+		System.out.println("Debug-----------------1");
 		try {
 			handleMessage();
 		} catch (IOException e) {
 
 		}
+		System.out.println("Debug-----------------2");
 	}
 
 	public void handleMessage() throws IOException {
@@ -41,15 +42,26 @@ public class DeviceHandler implements Runnable {
 		OutputStream outputStream = this.device.socket.getOutputStream();
 		// DataOutputStream backToClient = new DataOutputStream(outputStream);
 
-		while (isRunning) {
+		while (device.isRunning) {
 			// readMessage(bis);
 
 			try {
 				read = bis.read(buff, 0, 1024);
 			} catch (IOException e) {
 				System.out.println("Socket.read ERROR");
+				continue;
 			}
-
+			
+		
+			
+			if(read == -1)
+			{
+				this.device.socket.close();
+				System.out.println("Error: " + read);
+				device.isRunning=false;
+				break;
+			}
+			
 			System.out.print("Message [ ");
 			while (read >= pos) {
 				System.out.print(buff[pos++] + " ");
@@ -223,16 +235,12 @@ public class DeviceHandler implements Runnable {
 			}
 
 			//TODO : Q1_방범모드와 비방범모드 정보는 DB에 저장하지 않는가?
-			/*
+			
 			if (device.auto == true && state == 1)// TODO : 메시지 자동 전송 로직 (auto, opened)
 			{
-				ByteBuffer sendByteBuffer = null;
-				sendByteBuffer = ByteBuffer.allocate(1024);
-				sendByteBuffer.order(ByteOrder.LITTLE_ENDIAN);
-
-				sendByteBuffer.put(device.sensorID);
+				ArduinoCommunicationServer.addCount();
 			}
-			*/
+			
 		}
 	}
 
@@ -242,7 +250,7 @@ public class DeviceHandler implements Runnable {
 
 	private void resetDevice() {
 		try {
-			isRunning = false;
+			device.isRunning = false;
 			device.socket.close();
 
 		} catch (IOException e) {
