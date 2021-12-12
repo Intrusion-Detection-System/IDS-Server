@@ -418,7 +418,7 @@ public class ArduinoCommunicationServer {
 	}
 	
 	// jsp에서 호출
-	public static void sendSignal(int id) {
+	public static void sendActionSignal(int id) {
 		for (Device device : deviceList) {
 			if (device.id == id) {
 				try {
@@ -433,11 +433,11 @@ public class ArduinoCommunicationServer {
 					data.putShort(device.deviceID);
 
 					data.put((byte) 0); // controlOP : Server
-					data.put((byte) 4); 
+					data.put((byte) 4); // OP : Control
 
 					data.put((byte) 1); // HEADER
 					data.put((byte) 4); // LEN
-					data.put((byte) 0); // AutoMode
+					data.putInt(device.actionTime); // ActionTime
 					byte EOF = (byte) (255 & (byte) 0xFF);
 					data.put(EOF);
 					
@@ -447,6 +447,15 @@ public class ArduinoCommunicationServer {
 				} catch (IOException e) {
 					System.out.println("Can not declare OutputStream");
 				}
+			}
+		}
+	}
+	
+	public static void changeActionTime(int id, int actionTime)
+	{
+		for (Device device : deviceList) {
+			if (device.id == id) {
+				device.actionTime = actionTime;
 			}
 		}
 	}
