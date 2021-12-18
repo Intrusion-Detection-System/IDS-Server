@@ -8,6 +8,8 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.Vector;
 import java.util.concurrent.Executors;
 
@@ -36,6 +38,18 @@ public class ArduinoCommunicationServer {
 	}
 
 	public static void startServer() {
+		// Timer task: 10분 간격으로 count값 리셋
+		Timer timer = new Timer();
+		TimerTask task = new TimerTask() {
+			@Override
+			public void run() {
+				System.out.println("TimerTask(cnt): " + cnt);
+				cnt = 0;
+			}	
+		};
+		timer.schedule(task, 0, 10000); // 10분
+		
+		
 		int port = getPort();
 		System.out.println("Connecting to port " + port);
 
@@ -51,7 +65,8 @@ public class ArduinoCommunicationServer {
 				// 새로운 등록
 				Device device = registerDevice(connectionSocket);
 				if (device != null) { // 이미 등록된 디바이스
-					addDevice(device, connectionSocket);
+					System.out.println("!!이미 등록된 디바이스입니다!!");
+					addDevice(device);
 				}
 			}
 		} catch (IOException e) {
@@ -72,7 +87,7 @@ public class ArduinoCommunicationServer {
 		short deviceID;
 		String Mac;
 		byte[] tMac = new byte[6];
-		Device device = null;
+		//Device device = null;
 
 		try {
 			bis = new BufferedInputStream(connectionSocket.getInputStream());
@@ -95,7 +110,7 @@ public class ArduinoCommunicationServer {
 		if (((int) (controlOP & 0xFF) == CONTROL_fromDevice) && OP == OP_REQ) // from Device & registerREQ message...
 		{
 			System.out.println("IN");
-			device = new Device(sensorID, connectionSocket);
+			//device = new Device(sensorID, connectionSocket);
 			while (true) {
 				byte DataHeader = buff[pos++];
 				byte DataLength = buff[pos++];
@@ -109,13 +124,17 @@ public class ArduinoCommunicationServer {
 					System.arraycopy(buff, pos, tMac, 0, 6);
 					pos += 6;
 					Mac = byteToHex(tMac);
-					device.Mac = Mac;
+					//device.Mac = Mac;
+					/**
+					 * 등록되지 않은 디바이스: unregisteredDevices에 등록
+					 * 이미 등록된 디바이스: registeredDevice 반환 후 addDevice 메소드로 이동
+					 */
 					DatabaseConnection dbConnection = new DatabaseConnection();
 					try {
 						// TODO 이미 등록된 디바이스인지 확인
 						Device registeredDevice = dbConnection.checkRegisterdDevice(Mac);
 						if (registeredDevice == null) { // 동록되어있지 않음
-							System.out.println("unregisteredDevices 데이터 삽입");
+							System.out.println("!!미등록된 디바이스입니다!!");
 							dbConnection.insertRequestedDevice(sensorID, Mac);
 							unregisteredDevices.add(new UnregisteredDevice(Mac, connectionSocket)); // request_register.jsp에서
 																									// 등록처리
@@ -123,7 +142,6 @@ public class ArduinoCommunicationServer {
 						}
 
 						else { // 이미 등록된 디바이스
-							System.out.println("이미 등록된 디바이스 (addDevice 메소드 즉시 실행");
 							registeredDevice.setSocket(connectionSocket);
 							return registeredDevice;
 						}
@@ -140,11 +158,11 @@ public class ArduinoCommunicationServer {
 			}
 		}
 
-		return device;
+		return null;
 	}
 
 	// 디바이스 등록 승인
-	public static void addDevice(Device device, Socket connectionSocket) throws IOException {
+	public static void addDevice(Device device) throws IOException {
 		System.out.println("debug: addDevice");
 		System.out.println("sensor id: " + device.sensorID);
 		System.out.println("group id: " + device.groupID);
@@ -160,7 +178,7 @@ public class ArduinoCommunicationServer {
 		if (device.Mac.equals("")) // REQ메시지가 올바르지 X
 		{
 			System.out.println("wrong register REQ...");
-			connectionSocket.close();
+			device.socket.close();
 			// TODO : Error Message
 		} else // REQ가 올바르다.
 		{
@@ -189,7 +207,7 @@ public class ArduinoCommunicationServer {
 
 			DeviceHandler connection = new DeviceHandler(device);
 			device.socket.setSoTimeout(10000);
-			(new Thread(connection)).start();
+			new Thread(connection).start();
 			// Test-----
 			deviceList.add(device);
 			System.out.println(
@@ -202,12 +220,11 @@ public class ArduinoCommunicationServer {
 
 	// request_register.jsp 에서 호출
 	public void requestRegister(UnregisteredDevice unregisteredDevice) throws IOException {
-		System.out.println("debug: requestRegister");
 		Socket socket = unregisteredDevice.getConnectionSocket();
 		Device device = new Device(unregisteredDevice.getSensorID(), unregisteredDevice.getGroupID(),
 				unregisteredDevice.getDeviceID(), unregisteredDevice.getMac(), socket);
 
-		addDevice(device, socket);
+		addDevice(device);
 	}
 
 	// Device list 표시
@@ -279,9 +296,9 @@ public class ArduinoCommunicationServer {
 				data.put((byte) 0xFF);
 				sendSignal(device, data.array());
 				
-				iterator.remove();
 				device.isRunning=false;
 				device = null;
+				iterator.remove();
 			}
 		}
 	}
@@ -314,10 +331,10 @@ public class ArduinoCommunicationServer {
 			
 				
 				sendSignal(device, data.array());
-
-				iterator.remove();
+				
 				device.isRunning = false;
 				device = null;
+				iterator.remove();
 			}
 		}
 	}
@@ -469,10 +486,11 @@ public class ArduinoCommunicationServer {
 	}
 
 	// TODO Timer task
+	// 10분 단위로 count값 리셋
+	
 	
 	public static void addCount()
 	{
-		
 		if(cnt++ > maxCnt)
 			sendAllDevice();
 	}
