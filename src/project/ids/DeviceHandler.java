@@ -20,13 +20,12 @@ public class DeviceHandler implements Runnable {
 
 	@Override
 	public void run() {
-		System.out.println("Debug-----------------1");
+		System.out.println("New DeviceHandler");
 		try {
 			handleMessage();
 		} catch (IOException e) {
 
 		}
-		System.out.println("Debug-----------------2");
 	}
 
 	public void handleMessage() throws IOException {
@@ -48,11 +47,9 @@ public class DeviceHandler implements Runnable {
 			try {
 				read = bis.read(buff, 0, 1024);
 			} catch (IOException e) {
-				System.out.println("Socket.read ERROR");
+				//System.out.println("Socket.read ERROR");
 				continue;
 			}
-			
-		
 			
 			if(read == -1)
 			{
