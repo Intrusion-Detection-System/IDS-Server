@@ -48,6 +48,7 @@ public class DeviceHandler implements Runnable {
 				read = bis.read(buff, 0, 1024);
 			} catch (IOException e) {
 				//System.out.println("Socket.read ERROR");
+				//e.printStackTrace();
 				continue;
 			}
 			
@@ -129,6 +130,7 @@ public class DeviceHandler implements Runnable {
 			}
 
 		}
+		System.out.println("[Thread close]"+ device.deviceID);
 	}
 
 	

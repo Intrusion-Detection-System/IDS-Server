@@ -7,15 +7,19 @@ public class UnregisteredDevice {
 	private byte groupID;
 	private short deviceID;
 	private String mac;
-	private Socket connectionSocket;
+	private Socket socket;
 	
 	public UnregisteredDevice() {
 		
 	}
 	
+	public UnregisteredDevice(String mac) {
+		this.mac = mac;
+	}
+	
 	public UnregisteredDevice(String mac, Socket connectionSocket) {
 		this.mac = mac;
-		this.connectionSocket = connectionSocket;
+		this.socket = connectionSocket;
 	}
 	
 	public byte getSensorID() {
@@ -43,10 +47,10 @@ public class UnregisteredDevice {
 	public void setDeviceID(short deviceID) {
 		this.deviceID = deviceID;
 	}
-	public Socket getConnectionSocket() {
-		return connectionSocket;
+	public Socket getSocket() {
+		return socket;
 	}
-	public void setConnectionSocket(Socket connectionSocket) {
-		this.connectionSocket = connectionSocket;
+	public void setSocket(Socket socket) {
+		this.socket = socket;
 	}
 }
