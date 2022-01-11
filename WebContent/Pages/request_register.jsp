@@ -14,9 +14,19 @@
 
 	// 데이터베이스에 등록(table: devices, status)
 	DatabaseConnection dbConnection = new DatabaseConnection();
-	short deviceID = dbConnection.countDeviceID();
+	
+	short id;
+	short deviceID;
+	// 센서 id가 같고 그룹 id가 같으면 해당 디바이스의 "device_id+1"로 지정
+	if((id = dbConnection.checkDeviceID(sensorID, groupID)) != -1) {
+		deviceID = id;
+		deviceID++;
+	}
+	else {
+		deviceID = dbConnection.countDeviceID();
+	}
 	dbConnection.insertDevice(sensorID, groupID, deviceID, mac, location);
-	dbConnection.insertLogTable(sensorID, groupID, deviceID, "닫힘", 0);
+	dbConnection.insertLogTable(sensorID, groupID, deviceID, "닫힘", 0, mac);
 	
 	// unregistered_devices 테이블에서 등록된 디바이스 제거
 	dbConnection.deleteRegisteredDevice(mac);

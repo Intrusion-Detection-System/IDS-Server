@@ -34,7 +34,7 @@ public class DatabaseConnection {
 		}
 	}
 	
-	/* 운용 커넥션(커넥션풀) 
+	/* 운용 커넥션(커넥션풀) // jsp단에서는 사용 가능하지만 자바단에서는 사용 불가능 -> 추가 연구 필요
 	private DatabaseConnection() throws NamingException, SQLException, ClassNotFoundException {
 		try {
 			Class.forName("com.mysql.cj.jdbc.Driver");
@@ -72,6 +72,29 @@ public class DatabaseConnection {
 		
 		return count;
 	}
+	
+	// 중복된 id 검사(센서id와 그룹id가 같은 디바이스가 있을 경우 해당 디바이스ID 추출) 없다면 -1 리턴
+	public short checkDeviceID(byte sensorID, byte groupID) throws SQLException {
+		connection = DriverManager.getConnection(jdbcUrl, dbId, dbPass);
+		String query = "SELECT device_id FROM devices WHERE sensor_id=? and group_id=?";
+		
+		PreparedStatement pstmt = connection.prepareStatement(query);
+		pstmt.setInt(1, sensorID);
+		pstmt.setInt(2, groupID);
+		ResultSet resultSet = pstmt.executeQuery();
+		
+		short device_id = -1;
+		
+		if(resultSet.next()) {
+			device_id = resultSet.getShort("device_id");
+		}
+		
+		if(resultSet != null) resultSet.close();
+		if(pstmt != null) pstmt.close();
+		if(connection != null) connection.close();
+		
+		return device_id;
+	}
 
 	// 등록된 디바이스 조회
 	// 여러 개의 검색결과가 있을 수 있으므로 ArrayList로 반환
@@ -82,13 +105,19 @@ public class DatabaseConnection {
 		ArrayList<DeviceTableDTO> deviceList = new ArrayList<>();
 		
 		// 조인된 결과는 별도의 테이블이 필요
-		String query = 
+		String query =
+				"SELECT devices.sensor_id, devices.group_id, devices.device_id, devices.location, status.action, status.time " +
+				"FROM devices, status " +
+				"WHERE devices.mac_addr = status.mac_addr " +
+				"AND status.id in (SELECT max(status.id) FROM status GROUP BY mac_addr)";
+				/*
 				"SELECT devices.sensor_id, devices.group_id, devices.device_id, devices.location, status.action, status.time " +
 				"FROM devices, status " +
 				"WHERE devices.sensor_id = status.sensor_id " +
 				"AND devices.group_id = status.group_id " +
 				"AND devices.device_id = status.device_id " +
 				"AND status.id in (SELECT max(status.id) FROM status GROUP BY status.device_id)";
+				*/
 		
 		PreparedStatement pstmt = connection.prepareStatement(query);
 		ResultSet resultSet = pstmt.executeQuery();
@@ -269,9 +298,9 @@ public class DatabaseConnection {
 	}
 	
 	// 로그 저장
-	public void insertLogTable(byte sensorID, byte groupID, short deviceID, String action, int sensorData) throws SQLException {
+	public void insertLogTable(byte sensorID, byte groupID, short deviceID, String action, int sensorData, String mac_addr) throws SQLException {
 		connection = DriverManager.getConnection(jdbcUrl, dbId, dbPass);
-		String query = "INSERT INTO status(sensor_id, group_id, device_id, action, sensor_data, time) VALUES(?, ?, ?, ?, ?, ?)";
+		String query = "INSERT INTO status(sensor_id, group_id, device_id, action, sensor_data, time, mac_addr) VALUES(?, ?, ?, ?, ?, ?, ?)";
 		
 		PreparedStatement pstmt = connection.prepareStatement(query);
 		pstmt.setByte(1, sensorID);
@@ -280,6 +309,7 @@ public class DatabaseConnection {
 		pstmt.setString(4, action);
 		pstmt.setInt(5, sensorData);
 		pstmt.setTimestamp(6, new Timestamp(System.currentTimeMillis()));
+		pstmt.setString(7, mac_addr);
 		pstmt.executeUpdate();
 		
 		if(pstmt != null) pstmt.close();

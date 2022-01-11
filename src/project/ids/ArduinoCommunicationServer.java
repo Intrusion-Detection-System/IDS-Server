@@ -89,8 +89,8 @@ public class ArduinoCommunicationServer {
 			System.out.println("Socket.read ERROR");
 		}
 
-		sensorID = buff[pos++]; // 0
-		groupID = buff[pos++]; // 1
+		sensorID = buff[pos++]; // 1
+		groupID = buff[pos++]; // 0
 
 		System.arraycopy(buff, pos, tDeviceID, 0, 2);
 		pos += 2; // 2-3

@@ -31,166 +31,74 @@
 		<%	
 		ArrayList<DeviceTableDTO> registeredDeviceList = dbConnection.selectRegisteredDevice();
 			
-		// DeviceList(tcList)의 사이즈가 0이며
-		// 하나의 디바이스만 등록되었다가 DeviceList에서 삭제된 경우
-		// 해당 디바이스 컬럼의 배경화면을 흑백으로한다.
-		if(aliveDeviceList.size() == 0) {
-			for(int i=0; i<registeredDeviceList.size(); i++) {
-				byte sensorID = registeredDeviceList.get(i).getSensorID();
-				byte groupID = registeredDeviceList.get(i).getGroupID();
-				byte deviceID = registeredDeviceList.get(i).getDeviceID();
-				String location = registeredDeviceList.get(i).getLocation();
-				String state = registeredDeviceList.get(i).getAction();
-				Timestamp time = registeredDeviceList.get(i).getMeasurementTime();
-		
-				int id = Integer.parseInt(String.format("%d%02d%02d", sensorID, groupID, deviceID));
-		%>
-				<tr id="disabledDevice">
-					<td width="200"><%=id%></td> <!-- 디바이스id  -->
-					<td id="location<%=id%>" width="200"><%=location%></td> <!-- 위치 -->
-					<%if (state.equals("열림")) {%>
+		for(int i=0; i<registeredDeviceList.size(); i++) {
+			byte sensorID = registeredDeviceList.get(i).getSensorID();
+			byte groupID = registeredDeviceList.get(i).getGroupID();
+			byte deviceID = registeredDeviceList.get(i).getDeviceID();
+			String location = registeredDeviceList.get(i).getLocation();
+			String state = registeredDeviceList.get(i).getAction();
+			Timestamp time = registeredDeviceList.get(i).getMeasurementTime();
+			String mode = "";
+			String setMode = "";
+			
+			int id = Integer.parseInt(String.format("%d%02d%02d", sensorID, groupID, deviceID));
+			
+			for(int j=0; j<aliveDeviceList.size(); j++) {
+				if(aliveDeviceList.get(j).id == id) {
+					if(aliveDeviceList.get(j).auto == true) {
+						mode = "(방범모드)";
+						setMode = "비방범모드";
+					}
+					else {
+						mode = "(비방범모드)";
+						setMode = "방범모드";
+					}
+				}
+			}%>
+	
+			
+			<tr id="connectedDevice">
+					<td width="200"><%=id%></td>
+					<td id="location<%=id%>"width="200"><%=location%></td>
+					<% if (state.equals("열림")) {%>
 						<td width="200" style="color: red"><%=state%><br>
+						<p style='color: #000000; font-size: 14px;'><%=mode %></p>
 						</td>
-					<%} else if(state.equals("닫힘")) {%>
-						<td width="200" style="color: green"><%=state%></td>
+					<%} else if (state.equals("닫힘")) {%>
+						<td width="200" style="color: green"><%=state%>
+						<p style='color: #000000; font-size: 14px;'><%=mode %></p>
+						</td>
 					<%} %>
 					<td width="200"><%=time%></td>
 					<td width="200">
 						<form action="device_log.jsp" target="_blank" method="post">
 							<input type="text" value="<%=id%>" name="deviceID" style="display: none;" readonly>
-							<input type="submit" value="로그확인"> 
+							<input type="submit" value="로그확인">
+						</form>
+					</td>	
+					<td width="300">
+						<form action="disconnect_device.jsp" target="_blank" method="post">
+							<input type="text" value="<%=id%>" name="deviceID" style="display: none;" readonly>
+							<input type="submit" value="제거" >
+						</form>
+						<form action="reset_device.jsp" target="_blank" method="post">
+							<input type="text" value="<%=id%>" name="deviceID" style="display: none;" readonly>
+							<input type="submit" value="초기화" >
 						</form>
 					</td>
 					<td width="300">
-						<form action="" target="_blank" method="post">
-							<input type="submit" value="제거" disabled>
+						<form action="request_signal.jsp" target="_blank" method="post">
+							<input type="text" value=<%=id%> name="deviceID" style="display: none;" readonly>
+							<input type="submit" value="경고신호">
 						</form>
-						<form action="" target="_blank" method="post">
-							<input type="submit" value="초기화" disabled>
-						</form>
-					</td>
-					<td width="300">
-						<form action="" target="_blank" method="post">
-							<input type="submit" value="경고신호" disabled>
-						</form>
-						<form action="" target="_blank" method="post">
-							<input type="button" id="mode" value="방범모드" disabled>
+						<form action="change_mode.jsp" target="_blank" method="post">
+							<input type="text" value=<%=id%> name="deviceID" style="display: none;" readonly>
+							<button type="submit" id=<%=id%> name="mode" value=<%=setMode%>><%=setMode%></button>
 						</form>	
 					</td> 
 				</tr>
-		<%
-			}
-		}
-		// DeviceList를 탐색하여 연결이 끊어진 경우
-		// 해당 디바이스 컬럼의 배경색을 흑백으로한다.
-		// 연결이 되어있는 디바이스는 정상표시한다.
-		else {
-			for(int i=0; i<registeredDeviceList.size(); i++) {
-				byte sensorID = registeredDeviceList.get(i).getSensorID();
-				byte groupID = registeredDeviceList.get(i).getGroupID();
-				byte deviceID = registeredDeviceList.get(i).getDeviceID();
-				String location = registeredDeviceList.get(i).getLocation();
-				String state = registeredDeviceList.get(i).getAction();
-				Timestamp time = registeredDeviceList.get(i).getMeasurementTime();
-				boolean isConnected = false;
-				String mode = "";
-				String setMode = "";
-				
-				int id = Integer.parseInt(String.format("%d%02d%02d", sensorID, groupID, deviceID));
-				
-				for(int j=0; j<aliveDeviceList.size(); j++) {
-					if(aliveDeviceList.get(j).id == id) {
-						isConnected = true; // 연결되어있는 디바이스
-						if(aliveDeviceList.get(j).auto == true) {
-							mode = "(방범모드)";
-							setMode = "비방범모드";
-						}
-						else {
-							mode = "(비방범모드)";
-							setMode = "방범모드";
-						}
-					}
-				}%>
-		
-				<%if(isConnected) {%> 
-					<tr id="connectedDevice">
-						<td width="200"><%=id%></td>
-						<td id="location<%=id%>"width="200"><%=location%></td>
-						<% if (state.equals("열림")) {%>
-							<td width="200" style="color: red"><%=state%><br>
-							<p style='color: #000000; font-size: 14px;'><%=mode %></p>
-							</td>
-						<%} else if (state.equals("닫힘")) {%>
-							<td width="200" style="color: green"><%=state%>
-							<p style='color: #000000; font-size: 14px;'><%=mode %></p>
-							</td>
-						<%} %>
-						<td width="200"><%=time%></td>
-						<td width="200">
-							<form action="device_log.jsp" target="_blank" method="post">
-								<input type="text" value="<%=id%>" name="deviceID" style="display: none;" readonly>
-								<input type="submit" value="로그확인">
-							</form>
-						</td>	
-						<td width="300">
-							<form action="disconnect_device.jsp" target="_blank" method="post">
-								<input type="text" value="<%=id%>" name="deviceID" style="display: none;" readonly>
-								<input type="submit" value="제거" >
-							</form>
-							<form action="reset_device.jsp" target="_blank" method="post">
-								<input type="text" value="<%=id%>" name="deviceID" style="display: none;" readonly>
-								<input type="submit" value="초기화" >
-							</form>
-						</td>
-						<td width="300">
-							<form action="request_signal.jsp" target="_blank" method="post">
-								<input type="text" value=<%=id%> name="deviceID" style="display: none;" readonly>
-								<input type="submit" value="경고신호">
-							</form>
-							<form action="change_mode.jsp" target="_blank" method="post">
-								<input type="text" value=<%=id%> name="deviceID" style="display: none;" readonly>
-								<button type="submit" id=<%=id%> name="mode" value=<%=setMode%>><%=setMode%></button>
-							</form>	
-						</td> 
-					</tr>
-				<%}
-				
-				else { %>	
-					<tr id="disabledDevice">
-						<td width="200"><%=id%></td>
-						<td id="location<%=id%>"width="200"><%=location%></td>
-						<% if (state.equals("열림")) {%>
-							<td width="200" style="color: red"><%=state%><br></td>
-						<%} if (state.equals("닫힘")) {%>
-							<td width="200" style="color: green"><%=state%></td>
-						<%} %>
-						<td width="200"><%=time%></td>
-						<td width="200">
-							<form action="device_log.jsp" target="_blank" method="post">
-								<input type="text" value="<%=id%>" name="deviceID" style="display: none;" readonly>
-								<input type="submit" value="로그확인">
-							</form>
-						</td>
-						<td width="300">
-							<form action="" target="_blank" method="post">
-								<input type="submit" value="제거" disabled>
-							</form>
-							<form action="" target="_blank" method="post">
-								<input type="submit" value="초기화" disabled>
-							</form>
-						</td>
-						<td width="300">
-							<form action="" target="_blank" method="post">
-								<input type="submit" value="경고신호" disabled>
-							</form>
-							<form action="change_mode.jsp" target="_blank" method="post">
-								<input type="button" id="mode" value="방범모드" disabled>
-							</form>	
-						</td> 
-					</tr>
-			<%}
-			}
-		}%>
+			
+		<% }%>
 	</table>
 </body>
 </html>

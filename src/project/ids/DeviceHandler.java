@@ -225,9 +225,9 @@ public class DeviceHandler implements Runnable {
 			DatabaseConnection dbConnection = new DatabaseConnection();
 			try {
 				if (state == 1) {
-					dbConnection.insertLogTable(device.sensorID, device.groupID, device.deviceID, "열림", angle);
+					dbConnection.insertLogTable(device.sensorID, device.groupID, device.deviceID, "열림", angle, device.Mac);
 				} else if (state == 0) {
-					dbConnection.insertLogTable(device.sensorID, device.groupID, device.deviceID, "닫힘", angle);
+					dbConnection.insertLogTable(device.sensorID, device.groupID, device.deviceID, "닫힘", angle, device.Mac);
 				}
 			} catch (SQLException e) {
 				e.printStackTrace();
