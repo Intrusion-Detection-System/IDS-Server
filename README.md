@@ -88,4 +88,12 @@ Web
 
 #
 
+### 웹 페이지
+<b>관리자 인터페이스</b>
+  <img src="./img/sample01.png"/>
+
+<b>로그 정보</b>
+  <img src="./img/sample02.png"/>
+#
+
 ### 경성대학교 산학협력단 지원
